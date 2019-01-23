@@ -14,10 +14,6 @@ class RespPlot extends PureComponent {
     this.ref = React.createRef();
     this.toDomXCoord = this.toDomXCoord.bind(this);
     this.toDomYCoord = this.toDomYCoord.bind(this);
-    this.x = [...Array(180).keys()].map((x)=>(1+x)*1000);
-    this.ys = [this.x.map( ()=>Math.random()*400),
-              this.x.map( ()=>Math.random()*400)
-              ];
   }
 
   render() {
@@ -36,7 +32,7 @@ class RespPlot extends PureComponent {
   }
   
   draw() {
-    let {x,ys} = this;
+    let {x,ys} = this.props;
     let {minX,maxX,minY,maxY,width,height} = this.props;
     let canvas = this.ref.current;
 
