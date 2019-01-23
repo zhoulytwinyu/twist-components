@@ -10,8 +10,6 @@ import {changeTopLevelPlot} from "../actions/plot-actions";
 import location from "./test-data/location";
 import {plot1x,plot1ys} from "./test-data/plot1";
 
-console.log(plot1x,plot1ys);
-
 class RespPlotBundle extends Component {
   render() {
     let { minX,maxX,
@@ -24,25 +22,27 @@ class RespPlotBundle extends Component {
     let {LEFT,TOP,RIGHT,BOTTOM} = this;
     return (
       <div style={{position:"relative", width:LEFT+RIGHT+width, height:TOP+BOTTOM+height}}>
-        <Location data={location} minX={minX} maxX={maxX} height={BOTTOM} width={width} left={LEFT} top={height}/>
-        <XAxisDate minX={minX} maxX={maxX} height={BOTTOM} width={width} left={LEFT} top={height} />
-        <YAxis minY={minY} maxY={maxY} height={height} width={LEFT} left={0} top={0} />
+        <Location data={location} minX={minX} maxX={maxX} height={BOTTOM} width={width} left={LEFT} top={0}/>
+        
+        <XAxisDate minX={minX} maxX={maxX} height={BOTTOM} width={width} left={LEFT} top={height+TOP} />
+        <YAxis minY={minY} maxY={maxY} height={height} width={LEFT} left={0} top={TOP} />
         <RespPlot x={plot1x} ys={plot1ys} minX={minX} maxX={maxX} minY={minY} maxY={maxY} height={height} width={width} left={LEFT} top={TOP} />
-        <VerticalCrosshair hoverX={hoverX} minX={minX} maxX={maxX} width={width} height={height} style={{position:"absolute",left:50+"px",top:"0px"}} />
+        
+        <VerticalCrosshair hoverX={hoverX} minX={minX} maxX={maxX} width={width} height={height} left={LEFT} top={TOP} />
         
         <InteractionBox mouseMoveHandler={changeHandler}
                         mouseClickHandler={changeHandler}
                         mouseDragHandler={changeHandler}
                         minX={minX} maxX={maxX} height={height} width={width}
-                        style={{position:"absolute",left:50+"px",top:"0px"}} />
+                        left={LEFT} top={TOP} />
       </div>
     );
   }
 }
 
 RespPlotBundle.prototype.LEFT=50;
-RespPlotBundle.prototype.TOP=0;
-RespPlotBundle.prototype.RIGHT=0;
+RespPlotBundle.prototype.TOP=50;
+RespPlotBundle.prototype.RIGHT=50;
 RespPlotBundle.prototype.BOTTOM=50;
 
 

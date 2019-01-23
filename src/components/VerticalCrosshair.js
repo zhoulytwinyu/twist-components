@@ -6,13 +6,15 @@ class VerticalCrosshair extends Component {
   }
   
   render() {
-    let {hoverX,height,width,style} = this.props;
+    let {hoverX,height,width,left,top} = this.props;
     if (hoverX===null || hoverX===undefined) {
       return null;
     }
-    let left = this.toDomXCoord(hoverX)-0.5;
+    let crosshairLeft = this.toDomXCoord(hoverX)-0.5;
     return (
-      <div style={{...style,height:height+"px",width:width+"px"}}><div style={{position:"absolute",backgroundColor:"red",height:"100%",width:"1px",left:left+"px"}}></div></div>
+      <div style={{position:"absolute",height:height,width:width,left:left,top:top}}>
+        <div style={{position:"absolute",backgroundColor:"grey",height:"100%",width:1,left:crosshairLeft-0.5}}></div>
+      </div>
     );
   }
   

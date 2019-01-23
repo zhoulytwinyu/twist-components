@@ -8,7 +8,7 @@ class Location extends PureComponent {
     super(props);
     this.ref = React.createRef();
     this.toDomXCoord = this.toDomXCoord.bind(this);
-    this.preprocessData = memoize_one(this.preprocessData.bind(this));
+    this.convertNameToColor = memoize_one(this.convertNameToColor);
   }
 
   render() {
@@ -31,19 +31,19 @@ class Location extends PureComponent {
     let {data} = this.props;
     // data: [{name,start,end},...]
     // assumptions: No overlap.
-    let preprocessedData = this.preprocessData(data);
-    
+    let preprocessedData = this.convertNameToColor(data,this.COLOR_LUT);
+    preprocessedData = preprocessedData.filter( ({color,start,end})=> !(start>maxX || end<minX) );
+    preprocessedData = preprocessedData.map(({color,start,end})=>({ color,
+                                                                    domStart: this.toDomXCoord(start),
+                                                                    domEnd: this.toDomXCoord(end)
+                                                                  })
+                                              );
     let canvas = this.ref.current;
 
     // Clear plots
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
     
-    preprocessedData = preprocessedData.map(({color,start,end})=>({ color,
-                                                                        domStart: this.toDomXCoord(start),
-                                                                        domEnd: this.toDomXCoord(end)
-                                                                      })
-                                                );
     // Plot
     for (let {color,domStart,domEnd} of preprocessedData) {
       ctx.fillStyle=color;
@@ -51,14 +51,12 @@ class Location extends PureComponent {
     }
   }
   
-  preprocessData(data) {
-    console.log("here");
-    let {COLOR_LUT,toDomXCoord} = this;
-    
-    let ret = data.map( ({name,start,end})=>({color:COLOR_LUT[name],
-                                                  start,
-                                                  end})
+  convertNameToColor(data,color_lut) {
+    let ret = data.map( ({name,start,end})=>({color:color_lut[name],
+                                              start,
+                                              end})
                         );
+    console.log(ret);
     return ret;
   }
   
@@ -68,7 +66,7 @@ class Location extends PureComponent {
   }
 }
 
-Location.prototype.COLOR_LUT = {"OR":"brickred", "8S":"pink", "8E":"orange", "home":"green"}
+Location.prototype.COLOR_LUT = {"OR":"firebrick", "8S":"pink", "8E":"orange", "home":"green"}
 
 
 export default Location;

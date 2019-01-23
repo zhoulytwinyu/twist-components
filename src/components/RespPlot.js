@@ -49,7 +49,6 @@ class RespPlot extends PureComponent {
     hLinePlot(canvas,[this.toDomYCoord(0),this.toDomYCoord(minY)],0,canvas.width);
     // Draw plot
     stepLinePlot(canvas,domX,domYs[0]);
-    scatterPlot(canvas,domX,domYs[0],{shape:"dot",radius:2})
   }
   
   toDomXCoord(dataX) {

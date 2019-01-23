@@ -10,9 +10,9 @@ class InteractionBox extends Component {
   }
   
   render() {
-    let {style,height,width} = this.props;
+    let {height,width,top,left} = this.props;
     return (
-      <div ref={this.ref} style={{...style,height:height+"px",width:width+"px"}}  onClick={this.handleClick} onMouseMove={this.handleMouseMove} onMouseOut={this.handleMouseOut}></div>
+      <div ref={this.ref} style={{position:"absolute",height:height,width:width,top:top,left:left}}  onClick={this.handleClick} onMouseMove={this.handleMouseMove} onMouseOut={this.handleMouseOut}></div>
     );
   }
   
