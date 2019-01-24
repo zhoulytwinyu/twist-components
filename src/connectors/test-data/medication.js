@@ -10,14 +10,17 @@ const medication = [
   {name:"spironolactone", start:1000, end:4000, route:"IV", score: 10}
 ]
 
-const medCategory = { "furosemide":["loop"],
-                      "bumetanide":["loop"],
-                      "chlorotiazide":["thiazide"],
-                      "albumin":["vol"]}
+const medCategory = { "furosemide":"loop",
+                      "bumetanide":"loop",
+                      "chlorotiazide":"thiazide",
+                      "albumin":"vol"};
 
 const categoryOrder = ["loop","thiazide","vol"];
 
+const useMeds = new Set(["furosemide","bumetanide","chlorotiazide","albumin","spironolactone"]);
+
 export {medication,
         medCategory,
+        useMeds,
         categoryOrder
         };

@@ -6,13 +6,14 @@ import {changeTopLevelPlot} from "../actions/plot-actions";
 import MedicationRecord from "../components/MedicationRecord";
 import {medication,
         medCategory,
+        useMeds,
         categoryOrder} from "./test-data/medication";
 
 class MedicationRecordBundle extends Component {
   constructor(props){
     super(props);
     this.state = {
-      height:null
+      height:0
     }
     this.setState=this.setState.bind(this);
   }
@@ -26,9 +27,9 @@ class MedicationRecordBundle extends Component {
     let { changeHandler } = this.props;
     let {LEFT,TOP,RIGHT,BOTTOM} = this;
     return (
-      <div style={{position:"relative", width:width, height:height}}>
-        <MedicationRecord data={medication} useMeds={["","","",""]} medCategory={medCategory} categoryOrder={categoryOrder}
-                          minX={minX} maxX={maxX} width={1000} left={0} top={0}
+      <div style={{position:"relative", width:width, height:height, backgroundColor:"red"}}>
+        <MedicationRecord data={medication} useMeds={useMeds} medCategory={medCategory} categoryOrder={categoryOrder}
+                          minX={minX} maxX={maxX} width={1000} height={height} left={left} top={30}
                           updateHeightHandler={this.setState} />
       </div>
     );
