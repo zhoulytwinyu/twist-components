@@ -40,7 +40,7 @@ class RespPlotBundle extends Component {
   }
 }
 
-RespPlotBundle.prototype.LEFT=50;
+RespPlotBundle.prototype.LEFT=150;
 RespPlotBundle.prototype.TOP=50;
 RespPlotBundle.prototype.RIGHT=50;
 RespPlotBundle.prototype.BOTTOM=50;

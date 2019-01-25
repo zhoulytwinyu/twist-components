@@ -56,7 +56,6 @@ class Location extends PureComponent {
                                               start,
                                               end})
                         );
-    console.log(ret);
     return ret;
   }
   

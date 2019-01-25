@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "plot-utils": "github:zhoulytwinyu/plot-utils",
+    "plot-utils": "..//plot-utils",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-redux": "^6.0.0",
