@@ -12,10 +12,11 @@ class YAxis extends PureComponent {
   }
 
   render() {
-    let {height,width,left,top} = this.props;
+    let {height,width,minY,maxY,style,...rest} = this.props;
     let {TOP_OFFSET,BOTTOM_OFFSET} = this;
+    style = {...style,marginTop:TOP_OFFSET};
     return (
-      <canvas ref={this.ref} height={height-TOP_OFFSET+BOTTOM_OFFSET} width={width} style={{position:"absolute", top:top+TOP_OFFSET, left:left}}></canvas>
+      <canvas ref={this.ref} height={height-TOP_OFFSET+BOTTOM_OFFSET} width={width} style={style} {...rest}></canvas>
     );
   }
 

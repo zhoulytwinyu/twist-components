@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "../utils/memoize";
 import {toDomXCoord_Linear,
+        toDomCoord_Categorical,
         scatterPlot} from "plot-utils";
 
 class MedicationRecord extends PureComponent {
@@ -20,9 +21,10 @@ class MedicationRecord extends PureComponent {
   render() {
     let {ROW_HEIGHT} = this;
     let {width,left,top,style} = this.props;
+    let {kargs} = this.props;
     
     return (
-      <canvas ref={this.ref} width={width} style={{position:"absolute", left:left, top:top}}></canvas>
+      <canvas ref={this.ref} width={width} style={{position:"absolute", left:left, top:top}} {...kargs}></canvas>
     );
   }
 
@@ -31,9 +33,7 @@ class MedicationRecord extends PureComponent {
   }
   
   componentDidUpdate(){
-    let t= new Date();
     this.draw();
-    console.log( new Date()-t );
   }
   
   draw() {
@@ -56,13 +56,13 @@ class MedicationRecord extends PureComponent {
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,requiredHeight);
     // Calculate ordering
-    let {categoryToPlot,medToPlot} = this.getCategoryAndMedsPosition(filteredData,categoryOrder);
-    this.handleUpdatePanel(categoryToPlot,medToPlot);
-    
-    let medPosLUT = this.getPosLUT(medToPlot);
+    let {categoryPosition,medPosition} = this.getCategoryAndMedsPosition(filteredData,categoryOrder);
+    this.handleUpdatePanel(categoryPosition,medPosition);
+    let medPosLUT = this.getMedPosLUT(medPosition);
+    //console.log(medPosLUT);
     // Draw 
     let domX = filteredData.map( ({start,end})=>this.toDomXCoord((start+end)/2) );
-    let domY = filteredData.map( ({name})=>this.toDomYCoord(name,medPosLUT,rowHeight) );
+    let domY = filteredData.map( ({name})=>this.toDomYCoord(name,medPosLUT,"middle") );
     let option = {shape:"dot",radius:5,fillStyle:"red"};
     scatterPlot(canvas,domX,domY,option);
   }
@@ -72,8 +72,9 @@ class MedicationRecord extends PureComponent {
     return toDomXCoord_Linear(width,minX,maxX,dataX);
   }
   
-  toDomYCoord(dataY,medPosLUT,rowHeight) {
-    return (medPosLUT[dataY]+0.5)*rowHeight;
+  toDomYCoord(med,medPosLUT,type) {
+    let {rowHeight} = this.props;
+    return toDomCoord_Categorical(med,medPosLUT,rowHeight,type);
   }
   
   handleUpdateHeight(height) {
@@ -87,19 +88,19 @@ class MedicationRecord extends PureComponent {
     }
   }
 
-  handleUpdatePanel(categoryToPlot,medToPlot) {
+  handleUpdatePanel(categoryPosition,medPosition) {
     if (!this.memo) {
       this.memo = {};
     }
-    let categoryToPlotJSON = JSON.stringify(categoryToPlot);
-    let medToPlotJSON = JSON.stringify(medToPlot)
-    if (this.memo.categoryToPlotJSON !== JSON.stringify(categoryToPlot) ||
-        this.memo.medToPlotJSON !== JSON.stringify(medToPlot)
+    let categoryPosition_JSON = JSON.stringify(categoryPosition);
+    let medPosition_JSON = JSON.stringify(medPosition)
+    if (this.memo.categoryPosition_JSON !== categoryPosition_JSON ||
+        this.memo.medPosition_JSON !== medPosition_JSON
         ) {
-      this.memo.categoryToPlotJSON = categoryToPlotJSON;
-      this.memo.medToPlotJSON = medToPlotJSON;
+      this.memo.categoryPosition_JSON = categoryPosition_JSON;
+      this.memo.medPosition_JSON = medPosition_JSON;
       let {updatePanelHandler} = this.props;
-      updatePanelHandler({categoryToPlot,medToPlot});
+      updatePanelHandler({categoryPosition,subcategoryPosition:medPosition});
     }
   }
   
@@ -148,54 +149,37 @@ class MedicationRecord extends PureComponent {
       categoryMeds_LUT[category] = categoryMeds_LUT[category] || new Set();
       categoryMeds_LUT[category].add(name);
     }
-    let categoryToPlot = this.getCategoryToPlot(categoryMeds_LUT,categoryOrder);
-    let medToPlot = this.getMedToPlot(categoryMeds_LUT,categoryOrder);
-    return {categoryToPlot,medToPlot};
-  }
-  
-  getCategoryToPlot(categoryMeds_LUT,categoryOrder) {
-    let categoryToPlot=[];
+    
+    let categoryPosition = [];
+    let medPosition = [];
     let startPos = 0;
-    for (let category of categoryOrder) {
-      let medSet = categoryMeds_LUT[category];
-      if (medSet) {
-        categoryToPlot.push({name:category,start:startPos,end:startPos+medSet.size});
-        startPos += medSet.size;
-      }
-    }
-    return categoryToPlot;
-  }
-  
-  getMedToPlot(categoryMeds_LUT,categoryOrder) {
-    let medToPlot = [];
-    let startPos=0;
     for (let category of categoryOrder) {
       let medSet = categoryMeds_LUT[category];
       if (!medSet) {
         continue;
       }
-      let sortedMeds = [...medSet];
-      sortedMeds.sort();
-      for (let med of sortedMeds) {
-        medToPlot.push({name:med,start:startPos,end:startPos+1});
+      // update categoryPosition
+      categoryPosition.push({name:category,start:startPos,end:startPos+medSet.size});
+      // update medPosition
+      let medList = [...medSet];
+      medList.sort();
+      for (let med of medList){
+        medPosition.push({name:med,start:startPos,end:startPos+1});
         startPos+=1;
       }
     }
-    
-    return medToPlot;
+    return {categoryPosition,medPosition};
   }
   
-  getPosLUT(toPlot) {
-    let pos_LUT ={};
-    for (let i=0; i<toPlot.length; i++) {
-      pos_LUT[toPlot[i]["name"]] = i;
+  getMedPosLUT(medPosition) {
+    let medPosLUT = {};
+    for (let {name,start,end} of medPosition) {
+      medPosLUT[name] = {start,end};
     }
-    return pos_LUT;
+    return medPosLUT;
   }
 }
 
 MedicationRecord.prototype.SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"};
-MedicationRecord.prototype.CATEGORY_LABEL_COLORS = ["#d2b4de","#aed6f1","#a9dfbf","#f9e79f","#f5cba7"];
-MedicationRecord.prototype.MED_LABEL_COLORS = ["#FDFAEB","#FEF0D6"];
 
 export default MedicationRecord;

@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "../utils/memoize";
+import {toDomCoord_Categorical} from "plot-utils";
 
 class YCategoricalPanel extends PureComponent {
   constructor(props){
@@ -25,70 +26,64 @@ class YCategoricalPanel extends PureComponent {
   
   draw(){
     let {width} = this.props;
-    let {categoryToPlot, subcategoryToPlot,
+    let {categoryPosition,subcategoryPosition, // format: [{name,start,end}]
          categoryColors, subcategoryColors} = this.props;
-    console.log(categoryToPlot,subcategoryToPlot);
     let {CATEGORY_WIDTH} = this;
+    let categoryDomX = CATEGORY_WIDTH/2;
+    let subcategoryDomX = CATEGORY_WIDTH;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.save();
-    // Prepare category for plotting
-    let categoryDomX = CATEGORY_WIDTH/2;
-    let categoryDomY_Top = categoryToPlot.map( ({start})=>this.toDomYCoord(start) );
-    let categoryDomY_Bottom = categoryToPlot.map( ({end})=>this.toDomYCoord(end) );
-    let categoryDomY_Center = categoryToPlot.map( ({start,end})=>this.toDomYCoord((start+end)/2) );
-    let categoryLabels = categoryToPlot.map( ({name})=>name );
-    console.log(categoryLabels);
     // Draw category bg
-    for (let i=0; i<categoryDomY_Top.length; i++) {
-      let domYTop = categoryDomY_Top[i];
-      let domYBottom = categoryDomY_Bottom[i];
+    for (let i=0; i<categoryPosition.length; i++ ) {
+      let {start,end} = categoryPosition[i];
+      let domYTop = this.toDomYCoord(start);
+      let domYBottom = this.toDomYCoord(end);
       let color = categoryColors[i%categoryColors.length];
-      console.log(color,0,domYTop,CATEGORY_WIDTH,domYBottom-domYTop);
       ctx.fillStyle = color;
       ctx.fillRect(0,domYTop,CATEGORY_WIDTH,domYBottom-domYTop);
     }
     // Draw category label
+    ctx.font = "bold 16px Sans";
     ctx.fillStyle="white";
     ctx.strokeStyle="grey";
-    ctx.lineWidth=1;
+    ctx.lineWidth=0.5;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    for (let i=0; i<categoryLabels.length; i++) {
-      let domYCenter = categoryDomY_Center[i];
-      let label = categoryLabels[i];
+    for (let {name,start,end} of categoryPosition) {
+      if (name === '' || name === undefined || name === null) {
+        continue;
+      }
+      let domYCenter = this.toDomYCoord( (start+end)/2 );
       //TODO: Simplify text based on given width TODO
       ctx.translate(categoryDomX,domYCenter);
       ctx.rotate(-Math.PI/2);
-      ctx.fillText(label,0,0);
-      ctx.strokeText(label,0,0);
+      ctx.fillText(name,0,0);
+      ctx.strokeText(name,0,0);
       ctx.rotate(Math.PI/2);
       ctx.translate(-categoryDomX,-domYCenter);
     }
-    // Prepare subcategory for plotting
-    let subcategoryDomX = CATEGORY_WIDTH;
-    let subcategoryDomY_Top = subcategoryToPlot.map( ({start})=>this.toDomYCoord(start) );
-    let subcategoryDomY_Bottom = subcategoryToPlot.map( ({end})=>this.toDomYCoord(end) );
-    let subcategoryDomY_Center = subcategoryToPlot.map( ({start,end})=>this.toDomYCoord((start+end)/2) );
-    let subcategoryLabels = subcategoryToPlot.map( ({name})=>name );
-    console.log(subcategoryDomY_Top);
     // Draw subcategory bg
-    for (let i=0; i<subcategoryDomY_Top.length; i++) {
-      let domYTop = subcategoryDomY_Top[i];
-      let domYBottom = subcategoryDomY_Bottom[i];
+    for (let i=0; i<subcategoryPosition.length; i++) {
+      let {start,end} = subcategoryPosition[i];
+      let domYTop = this.toDomYCoord(start);
+      let domYBottom = this.toDomYCoord(end);
       let color = subcategoryColors[i%subcategoryColors.length];
       ctx.fillStyle = color;
       ctx.fillRect(subcategoryDomX,domYTop,width-subcategoryDomX,domYBottom-domYTop);
     }
     // Draw subcategory label
+    ctx.font = "14px Sans";
     ctx.textBaseline = "middle";
     ctx.textAlign = "left";
     ctx.fillStyle="black";
-    for (let i=0; i<subcategoryLabels.length; i++) {
-      let domYCenter = subcategoryDomY_Center[i];
-      let label = subcategoryLabels[i];
+    for (let {name,start,end} of subcategoryPosition) {
+      if (name === '' || name === undefined || name === null) {
+        continue;
+      }
+      let domYCenter = this.toDomYCoord( (start+end)/2 );
       // TODO: Simplify text based on given width
-      ctx.fillText(label,subcategoryDomX+5,domYCenter);
+      ctx.fillText(name,subcategoryDomX+5,domYCenter);
     }
     ctx.restore();
   }

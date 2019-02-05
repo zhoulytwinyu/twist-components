@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import {memoize_one} from "../utils/memoize";
+import {memoize_one} from "memoize";
 import {toDomXCoord_Linear,
         scatterPlot} from "plot-utils";
         

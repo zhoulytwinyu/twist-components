@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import {changeTopLevelPlot} from "../actions/plot-actions";
 import MedicationRecord from "../components/MedicationRecord";
 import YCategoricalPanel from "../components/YCategoricalPanel";
+import FourPhaseInteractionHOC from "../components/InteractionHOC/FourPhaseInteractionHOC";
 import {medication,
         medCategory,
         useMeds,
@@ -18,11 +19,10 @@ class MedicationRecordBundle extends Component {
     super(props);
     this.state = {
       height:0,
-      categoryToPlot:[],
-      subcategoryToPlot:[]
+      categoryPosition:[],
+      subcategoryPosition:[]
     }
     this.setState = this.setState.bind(this);
-    this.updatePanelHandler = this.updatePanelHandler.bind(this);
   }
   
   render() {
@@ -30,24 +30,25 @@ class MedicationRecordBundle extends Component {
           hoverX,
           width
           } = this.props;
-    let {height,categoryToPlot,subcategoryToPlot} = this.state;
+    let {height,categoryPosition,subcategoryPosition} = this.state;
     let {LEFT} = this;
     let { changeHandler } = this.props;
     return (
-      <div style={{position:"relative", width:width+LEFT, height:height, border:"black 1px solid"}}>
-        <YCategoricalPanel  categoryToPlot={categoryToPlot} subcategoryToPlot={subcategoryToPlot}
+      <div style={{position:"relative", width:width+LEFT, height:height, border:"black 1px solid"}} onMouseDown={this.props.onMouseDown}>
+        <YCategoricalPanel  categoryPosition={categoryPosition} subcategoryPosition={subcategoryPosition}
                             categoryColors={categoryColors} subcategoryColors={subcategoryColors}
                             width={LEFT} height={height} rowHeight={30} left={0} top={0} />
-        <MedicationRecord data={medication} useMeds={useMeds} medCategory={medCategory} categoryOrder={categoryOrder}
+        <FourPhaseInteractionHOC Component={MedicationRecord} data={medication} useMeds={useMeds} medCategory={medCategory} categoryOrder={categoryOrder}
                           minX={minX} maxX={maxX} width={1000} left={LEFT} top={0} rowHeight={30}
                           updateHeightHandler={this.setState}
-                          updatePanelHandler={this.updatePanelHandler} />
+                          updatePanelHandler={this.setState}
+                          clickHandler={console.log}
+                          hoveringHandler={console.log} mouseOutHandler={console.log}
+                          selectingHandler={console.log} selectedHandler={console.log}
+                          panningHandler={console.log} pannedHandler={console.log}
+                          />
       </div>
     );
-  }
-
-  updatePanelHandler({categoryToPlot,medToPlot}){
-    this.setState({categoryToPlot,subcategoryToPlot:medToPlot});
   }
 }
 
@@ -73,4 +74,4 @@ const MedicationRecordBundleConnector = connect(
   mapDispatchToProps
 )(MedicationRecordBundle);
 
-export default MedicationRecordBundleConnector
+export default MedicationRecordBundleConnector;

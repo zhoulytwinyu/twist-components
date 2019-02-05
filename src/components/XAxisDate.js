@@ -4,7 +4,6 @@ import {toDomXCoord_Linear,
         labelPlot,
         vLinePlot} from "plot-utils";
 
-
 class XAxisDate extends PureComponent {
   constructor(props){
     super(props);
@@ -13,10 +12,11 @@ class XAxisDate extends PureComponent {
   }
 
   render() {
-    let {height,width,left,top} = this.props;
+    let {height,width,minX,maxX,style,...rest} = this.props;
     let {LEFT_OFFSET,RIGHT_OFFSET} = this;
+    style={...style,marginLeft:-RIGHT_OFFSET,width:width-LEFT_OFFSET+RIGHT_OFFSET}
     return (
-      <canvas ref={this.ref} height={height} width={width-LEFT_OFFSET+RIGHT_OFFSET} style={{position:"absolute", left:left+LEFT_OFFSET, top:top}}></canvas>
+      <canvas ref={this.ref} height={height} width={width-LEFT_OFFSET+RIGHT_OFFSET} style={style}></canvas>
     );
   }
 

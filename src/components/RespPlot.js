@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent } from "react";
 import {filterData,
         toDomXCoord_Linear,
         toDomYCoord_Linear,
@@ -17,9 +17,9 @@ class RespPlot extends PureComponent {
   }
 
   render() {
-    let {height,width,left,top} = this.props;
+    let {height,width,minX,maxX,minY,maxY,...rest} = this.props;
     return (
-      <canvas ref={this.ref} height={height} width={width} style={{position:"absolute",left:left,top:top}}></canvas>
+      <canvas ref={this.ref} height={height} width={width} {...rest}></canvas>
     );
   }
 
@@ -35,7 +35,6 @@ class RespPlot extends PureComponent {
     let {x,ys} = this.props;
     let {minX,maxX,minY,maxY,width,height} = this.props;
     let canvas = this.ref.current;
-
     // Clear plots
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);

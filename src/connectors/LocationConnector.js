@@ -10,7 +10,7 @@ import VerticalCrosshair from "../components/VerticalCrosshair";
 import Location from "../components/Location";
 import HoverSelectionAddOn from "../components/HoverSelectionAddOn";
 import SelectionPoint from "../components/SelectionPoint";
-import TriPhaseInteractionHOC from "../components/InteractionHOC/TriPhaseInteractionHOC";
+import FourPhaseInteractionHOC from "../components/InteractionHOC/FourPhaseInteractionHOC";
 import {changeTopLevelPlot} from "../actions/plot-actions";
 import location from "./test-data/location";
 import {plot1x,plot1ys} from "./test-data/plot1";
@@ -25,14 +25,8 @@ let yLimitPosition = [{name:"ECMO",start:80,end:100},{name:"Haha",start:0,end:80
 let yLimitCategoryColors = ["yellow","orange","cyan"];
 let yLimitColors = ["red","blue"];
 
-const Div = (props) => {
-  let {kargs,...rest} = props;
-  return (
-    <div {...rest} {...kargs}></div>
-  );
-};
 
-class RespPlotBundle extends Component {
+class LocationPlotBundle extends Component {
   constructor(props){
     super(props);
     this.hoveringHandler = this.hoveringHandler.bind(this);
@@ -40,8 +34,6 @@ class RespPlotBundle extends Component {
   
   render() {
     let { minX,maxX,
-          minY,maxY,
-          text,
           hoverX,hoverY,
           hoverSelection,
           height, width,
@@ -70,7 +62,7 @@ class RespPlotBundle extends Component {
         <SelectionPoint hoverSelection={hoverSelection}
                         minX={minX} maxX={maxX} minY={minY} maxY={maxY} height={height} width={width} left={LEFT} top={TOP}
                         />
-        <TriPhaseInteractionHOC Component={Div}
+        <FourPhaseInteractionHOC Component={Div}
                         style={{position:"absolute",width:width,height:height,top:TOP,left:LEFT}}
                         clickHandler={console.log}
                         hoveringHandler={this.hoveringHandler} mouseOutHandler={console.log}
@@ -83,6 +75,7 @@ class RespPlotBundle extends Component {
       </div>
     );
   }
+  
   hoveringHandler ({domX,domY}) {
     let {changeHandler} = this.props;
     changeHandler({hoverX:domX*10,hoverY:domY*10});
@@ -121,3 +114,4 @@ const RespPlotBundleConnector = connect(
 )(RespPlotBundle);
 
 export default RespPlotBundleConnector
+
