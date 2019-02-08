@@ -5,10 +5,6 @@ class DragInteractionBox extends PureComponent {
     super(props);
     this.mouseDownEvent = null;
     this.ref = React.createRef();
-    
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleDocumentMouseUp = this.handleDocumentMouseUp.bind(this);
-    this.handleDocumentMouseMove = this.handleDocumentMouseMove.bind(this);
   }
   
   render(){
@@ -20,19 +16,20 @@ class DragInteractionBox extends PureComponent {
     );
   }
   
-  handleMouseDown(ev) {
+  handleMouseDown = (ev)=>{
     ev.preventDefault();
+    ev.stopPropagation();
     this.mouseDownEvent = ev;
     this.mouseDownEvent.persist();
-    document.onmousemove = this.handleDocumentMouseMove;
-    document.onmouseup = this.handleDocumentMouseUp;
+    document.addEventListener("mousemove",this.handleDocumentMouseMove);
+    document.addEventListener("mouseup",this.handleDocumentMouseUp);
     document.body.style.cursor = this.props.dragCursor;
   }
   
-  handleDocumentMouseUp(ev) {
+  handleDocumentMouseUp = (ev)=>{
     let {draggedHandler} = this.props;
-    document.onmousemove = null;
-    document.onmouseup = null;
+    document.removeEventListener("mousemove",this.handleDocumentMouseMove);
+    document.removeEventListener("mouseup",this.handleDocumentMouseUp);
     document.body.style.cursor = "auto";
     if (!draggedHandler) {
       return;
@@ -42,8 +39,7 @@ class DragInteractionBox extends PureComponent {
     draggedHandler({deltaDomX, deltaDomY});
   }
   
-  handleDocumentMouseMove(ev) {
-    ev.stopPropagation();
+  handleDocumentMouseMove = (ev)=>{
     let {draggingHandler} = this.props;
     this.moved = true;
     if (!draggingHandler) {

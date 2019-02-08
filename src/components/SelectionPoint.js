@@ -9,9 +9,12 @@ class SelectionPoint extends Component {
   }
   
   render() {
-    let {width, height, left, top} = this.props;
+    let { selection,
+          minX,maxX,width,
+          minY,maxY,height,
+          ...rest} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={height} style={{position:"absolute", left:left,top:top}}> </canvas>
+      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
     );
   }
   
@@ -25,19 +28,21 @@ class SelectionPoint extends Component {
   
   draw() {
     let {width, height} = this.props;
-    let {hoverSelection} = this.props;
+    let {selection} = this.props;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
-    if (!hoverSelection){
+    if (!selection){
       return;
     }
-    let {x,y} = hoverSelection;
-    let domX = this.toDomXCoord(x);
-    let domY = this.toDomYCoord(y);
-    ctx.beginPath();
-    ctx.arc(domX, domY, 5, 0, 2*Math.PI);
-    ctx.fill();
+    let {x,ys} = selection;
+    for (let y of ys) {
+      let domX = this.toDomXCoord(x);
+      let domY = this.toDomYCoord(y);
+      ctx.beginPath();
+      ctx.arc(domX, domY, 5, 0, 2*Math.PI);
+      ctx.fill();
+    }
   }
   
   toDomXCoord(dataX) {

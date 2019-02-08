@@ -1,27 +1,41 @@
 import React, { Component } from 'react';
-
+import {toDomXCoord_Linear} from "plot-utils";
+        
 class VerticalCrosshair extends Component {
   constructor(props) {
     super(props);
+    this.ref= React.createRef();
   }
   
   render() {
-    let {hoverX,height,width,left,top} = this.props;
-    if (hoverX===null || hoverX===undefined) {
-      return null;
-    }
-    let crosshairLeft = this.toDomXCoord(hoverX)-0.5;
+    let { hoverDataX,
+          minX,maxX,width,
+          ...rest} = this.props;
     return (
-      <div style={{position:"absolute",height:height,width:width,left:left,top:top}}>
-        <div style={{position:"absolute",backgroundColor:"grey",height:"100%",width:1,left:crosshairLeft-0.5}}></div>
-      </div>
+      <canvas ref={this.ref} width={width} height={1} {...rest}></canvas>
     );
+  }
+  
+  componentDidMount() {
+    this.draw();
+  }
+  
+  componentDidUpdate() {
+    this.draw();
+  }
+  
+  draw() {
+    let {hoverDataX,width} = this.props;
+    let canvas = this.ref.current;
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,width,1);
+    let hoverDomX = this.toDomXCoord(hoverDataX);
+    ctx.fillRect(hoverDomX-0.5,0,1,1);
   }
   
   toDomXCoord(dataX) {
     let {minX,maxX,width} = this.props;
-    let dataXPxScale = (maxX-minX)/width;
-    return (dataX-minX)/dataXPxScale;
+    return toDomXCoord_Linear(width,minX,maxX,dataX);
   }
 }
 

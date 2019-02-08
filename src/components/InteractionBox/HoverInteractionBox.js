@@ -1,45 +1,42 @@
 import React, { PureComponent } from 'react';
+import {fromDomXCoord_Linear,
+        fromDomYCoord_Linear} from "plot-utils";
 
 class HoverInteractionBox extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleMouseOut = this.handleMouseOut.bind(this);
   }
   
   render(){
-    let {hoverCursor,children,hoveringHandler,mouseOutHandler,...rest} = this.props;
+    let {children,hoveringHandler,mouseOutHandler,
+          minX,maxX,width,
+          minY,maxY,height,
+          ...rest} = this.props;
     return (
-      <div {...rest} onMouseMove={this.handleMouseMove} onMouseOut={this.handleHoverEnd}>
+      <div ref={this.ref} {...rest} onMouseDown={console.log} onMouseMove={this.handleMouseMove} onMouseOut={this.handleMouseOut}>
         {children}
       </div>
     );
   }
   
-  handleMouseMove(ev) {
-    if (ev.buttons!==0) {
-      return;
-    }
+  handleMouseMove = (ev) => {
     let {hoveringHandler} = this.props;
     if (!hoveringHandler){
       return;
     }
-    let bounds = ev.target.getBoundingClientRect();
-    let domX = ev.clientX;
-    let domY = ev.clientY;
+    let bounds = this.ref.current.getBoundingClientRect();
+    let domX = ev.clientX - bounds.left;
+    let domY = ev.clientY - bounds.top;
     hoveringHandler({domX,domY});
   }
   
-  handleMouseOut(ev) {
-    if (ev.buttons!==0) {
-      return;
-    }
+  handleMouseOut = (ev) => {
     let {mouseOutHandler} = this.props;
     if (!mouseOutHandler){
       return;
     }
-    let bounds = ev.target.getBoundingClientRect();
+    let bounds = this.ref.current.getBoundingClientRect();
     let domX = ev.clientX - bounds.left;
     let domY = ev.clientY - bounds.top;
     mouseOutHandler({domX,domY});

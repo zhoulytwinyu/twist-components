@@ -17,7 +17,10 @@ class RespPlot extends PureComponent {
   }
 
   render() {
-    let {height,width,minX,maxX,minY,maxY,...rest} = this.props;
+    let { x,ys,
+          minX,maxX,width,
+          minY,maxY,height,
+          ...rest} = this.props;
     return (
       <canvas ref={this.ref} height={height} width={width} {...rest}></canvas>
     );

@@ -1,70 +1,68 @@
 import React, { PureComponent } from 'react';
+import {fromDomXCoord_Linear} from "plot-utils";
 
 class TriPhaseInteractionBox extends PureComponent {
   constructor(props){
     super(props);
-    this.mouseDownPos = null;
+    this.ref = React.createRef();
+    this.mouseDownClientX = null;
     this.moved = null;
     this.timeout = null;
     this.mode = "hovering";
-    
-    this.ref = React.createRef();
-    
-    this.setModeCascade = this.setModeCascade.bind(this);
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleDocumentMouseUp = this.handleDocumentMouseUp.bind(this);
-    this.handleDocumentMouseMove = this.handleDocumentMouseMove.bind(this);
   }
   
-  render(){ 
-    let {children,...rest} = this.props;      
+  render(){
+    let { children,
+          clickedHandler,
+          selectingHandler,selectedHandler,
+          panningHandler,pannedHandler,
+          ...rest} = this.props;
     return (
-      <div{...rest} onMouseDown={this.handleMouseDown}>
+      <div ref={this.ref} onMouseDown={this.handleMouseDown} {...rest}>
         {children}
       </div>
     );
   }
   
-  handleMouseDown(ev) {
-    this.mouseDownPos = {clientX:ev.clientX,clientY:ev.clientY};
+  handleMouseDown = (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.mouseDownClientX = ev.clientX;
     this.moved = false;
     this.setModeCascade("clicking");
-    document.onmousemove = this.handleDocumentMouseMove;
-    document.onmouseup = this.handleDocumentMouseUp;
+    document.addEventListener("mousemove",this.handleDocumentMouseMove);
+    document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
   
-  handleDocumentMouseUp(ev) {
-    document.onmousemove = null;
-    document.onmouseup = null;
+  handleDocumentMouseUp = (ev) => {
+    document.removeEventListener("mousemove",this.handleDocumentMouseMove);
+    document.removeEventListener("mouseup",this.handleDocumentMouseUp);
     clearTimeout(this.timeout);
+    let startDomX = this.mouseDownClientX-this.ref.current.getBoundingClientRect().left;
+    let endDomX = ev.clientX-this.ref.current.getBoundingClientRect().left;
     switch (this.mode) {
       case "clicking":
         let {clickedHandler} = this.props;
         if (!clickedHandler) {
           break;
         }
-        let bounds = ev.target.getBoundingClientRect();
-        let domX = ev.clientX - bounds.left;
-        let domY = ev.clientY - bounds.top;
-        clickedHandler({domX,domY});
+        clickedHandler({domX:startDomX});
         break;
       case "selecting":
         let {selectedHandler} = this.props;
         if (!selectedHandler) {
           break;
         }
-        let deltaDomX=ev.clientX-this.mouseDownPos.clientX;
-        let deltaDomY=ev.clientY-this.mouseDownPos.clientY;
-        selectedHandler({deltaDomX,deltaDomY});
+        selectedHandler({ startDomX,
+                          endDomX
+                          });
         break;
       case "panning":
         let {pannedHandler} = this.props;
         if (!pannedHandler) {
           break;
         }
-        deltaDomX=ev.clientX-this.mouseDownPos.clientX;
-        deltaDomY=ev.clientY-this.mouseDownPos.clientY;
-        pannedHandler({deltaDomX,deltaDomY});
+        pannedHandler({startDomX,endDomX});
         break;
       default:
         throw new Error("UserTooStupidError");
@@ -72,9 +70,12 @@ class TriPhaseInteractionBox extends PureComponent {
     this.setHovering();
   }
   
-  handleDocumentMouseMove(ev) {
+  handleDocumentMouseMove = (ev) => {
     this.moved = true;
-    let {updateHandler} = this.props;
+    let deltaDomX = null;
+    let deltaDataX = null;
+    let startDomX = this.mouseDownClientX-this.ref.current.getBoundingClientRect().left;
+    let endDomX = ev.clientX-this.ref.current.getBoundingClientRect().left;
     switch (this.mode){
       case "clicking":
         clearTimeout(this.timeout);
@@ -86,25 +87,23 @@ class TriPhaseInteractionBox extends PureComponent {
         if (!selectingHandler) {
           return;
         }
-        let deltaDomX=ev.clientX-this.mouseDownPos.clientX;
-        let deltaDomY=ev.clientY-this.mouseDownPos.clientY;
-        selectingHandler({deltaDomX,deltaDomY});
+        selectingHandler({startDomX,
+                          endDomX
+                          });
         break;
       case "panning":
         let {panningHandler} = this.props;
         if (!panningHandler) {
           return;
         }
-        deltaDomX=ev.clientX-this.mouseDownPos.clientX;
-        deltaDomY=ev.clientY-this.mouseDownPos.clientY;
-        panningHandler({deltaDomX,deltaDomY});
+        panningHandler({startDomX,endDomX});
         break;
       default:
         throw new Error("UserTooDumpError");
     }
   }
 
-  setModeCascade(targetMode) {
+  setModeCascade = (targetMode)=>{
     switch (targetMode) {
       case "clicking":
         this.setClicking();
@@ -122,7 +121,7 @@ class TriPhaseInteractionBox extends PureComponent {
         }
         break;
       default:
-        throw new Error("UserTooStupidError");
+        throw new Error("ProgrammerTooStupidError");
     }
   }
   
@@ -139,26 +138,12 @@ class TriPhaseInteractionBox extends PureComponent {
   setSelecting() {
     this.mode = "selecting";
     document.body.style.cursor = "ew-resize";
-    let {selectingHandler} = this.props;
-    if (!selectingHandler) {
-      return;
-    }
-    let deltaDomX=0;
-    let deltaDomY=0;
-    selectingHandler({deltaDomX,deltaDomY});
   }
   
   setPanning(){
     let panHandler 
     this.mode = "panning";
     document.body.style.cursor = "move";
-    let {panningHandler} = this.props;
-    if (!panningHandler) {
-      return;
-    }
-    let deltaDomX=0;
-    let deltaDomY=0;
-    panningHandler({deltaDomX,deltaDomY});
   }
 }
 
