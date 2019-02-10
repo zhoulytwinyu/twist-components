@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import {changeTopLevelPlot} from "../actions/plot-actions";
 // Import components
 import XAxisDate from "../components/XAxisDate";
-import YAxisPanel from "../components/YAxisPanel";
+import YCategoricalPanel from "../components/YCategoricalPanel";
 import VerticalGrid from "../components/VerticalGrid";
 import HorizontalSlabGrid from "../components/HorizontalSlabGrid";
 import RespiratoryPlot from "../components/RespiratoryPlot";
@@ -26,12 +26,7 @@ for (let i=0; i<plot1x.length; i++) {
   selectionData.push({x:plot1x[i],ys:[plot1ys[0][i],plot1ys[1][i]] });
 }
 
-let yLimitCategoryPosition = [{name:".danger",start:80,end:100},{name:".asd",start:40,end:80}];
-let yLimitPosition = [{name:"ECMO",start:80,end:100},{name:"Haha",start:0,end:80}];
-let yLimitCategoryColors = ["yellow","orange","cyan"];
-let yLimitColors = ["red","blue"];
-
-class RespPlotBundle extends Component {
+class LocationBundle extends Component {
   render() {
     let { minX,maxX,
           minY,maxY,
@@ -53,60 +48,46 @@ class RespPlotBundle extends Component {
       <div style={{position:"relative", width:LEFT+RIGHT+width, height:TOP+BOTTOM+height}}>
         {/*Y Axis*/}
         <div style={{position:"absolute",width:LEFT,height:height,top:TOP}}>
-          <YAxisPanel style={{position:"absolute",width:LEFT,height:height}}
-                      category={[ {start:80,end:100,bgStyle:{fillStyle:"red"},name:"ECMO",textStyle:{fillStyle:"black",font:"bold 16px Sans",textAlign:"left",textBaseline:"middle"},textPosition:3},
-                                  {start:40,end:80,bgStyle:{fillStyle:"yellow"},name:"Other",textStyle:{fillStyle:"black",font:"bold 16px Sans",textAlign:"left",textBaseline:"middle"},textPosition:3}
-                                  ]}
-                      minY={minY} maxY={maxY} width={LEFT} height={height}
-                      />
+          <YCategoricalPanel  style={{position:"absolute",width:30,height:height}}
+                              category={[ {start:0,end:1,bgStyle:{fillStyle:"grey"}}
+                                          ]}
+                              width={LEFT} height={height}
+                              />
+          <YCategoricalPanel  style={{position:"absolute",width:LEFT-30,height:height,left:30}}
+                              category={[ {start:0,end:1,bgStyle:{fillStyle:"red"},name:"Location",textStyle:{fillStyle:"black",font:"bold 16px Sans",textAlign:"left",textBaseline:"middle"},textPosition:3}
+                                          ]}
+                              width={LEFT} height={height}
+                              />
+        </div>
+        <div style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}>
+            <VerticalGrid style={{position:"absolute",width:width,height:height}}
+                          grid={[{x:2000},{x:8000},{x:16000}]}
+                          minX={minX} maxX={maxX} width={width}
+                          />
+            <LocationPlot style={{position:"absolute",height:height,width:width}}
+                          minX={minX} maxX={maxX} width={width}
+                          data={location} />
+            <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
+                               hoverDataX={hoverX}
+                               minX={minX} maxX={maxX} width={width}
+                               />
+            <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
+                                    startDataX={inPlotXRangeSelectionStartDataX} endDataX={inPlotXRangeSelectionEndDataX}
+                                    minX={minX} maxX={maxX} width={width}/>
         </div>
         {/*Plot Area*/}
-        <div style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}>
-          <HorizontalSlabGrid style={{position:"absolute",width:width,height:height}}
-                              grid={[ {start:1000,end:800,color:"yellow"},
-                                      {start:800,end:600,color:"white"},
-                                      {start:600,end:300,color:"yellow"},
-                                      {start:300,end:0,color:"white"}]}
-                              minY={minY} maxY={maxY} height={height}
-                              />
-          <VerticalGrid style={{position:"absolute",width:width,height:height}}
-                        grid={[{x:2000},{x:8000},{x:16000}]}
-                        minX={minX} maxX={maxX} width={width}
-                        />
-          <RespiratoryPlot  style={{position:"absolute",width:width,height:height}}
-                            x={plot1x} ys={plot1ys}
-                            minX={minX} maxX={maxX} width={width}
-                            minY={minY} maxY={maxY} height={height} 
-                            />
-          <ProcedurePlot  style={{position:"absolute",width:width,height:height}}
-                          data = {procedures}
-                          selection={null}
-                          minX={minX} maxX={maxX} width={width} height={height}
-                          />
-          <SelectionPoint style={{position:"absolute",width:width,height:height}}
-                          selection={hoverSelection}
-                          minX={minX} maxX={maxX} width={width}
-                          minY={minY} maxY={maxY} height={height} 
-                          />
-          <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
-                             hoverDataX={hoverX}
-                             minX={minX} maxX={maxX} width={width}
-                             />
-          <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
-                                  startDataX={inPlotXRangeSelectionStartDataX} endDataX={inPlotXRangeSelectionEndDataX}
-                                  minX={minX} maxX={maxX} width={width}/>
-        </div>
         <HoverSelectionXInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
                                                     minX={minX} maxX={maxX} width={width}
                                                     minY={minY} maxY={maxY} height={height}
                                                     data={selectionData}
                                                     hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
                                                     selectHandler={this.hoverSelectionHandler} >
-          <DualPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+          <DualPhaseXInteractionBoxWithReference  style={{position:"absolute",width:width,height:height}}
                                                   minX={minX} maxX={maxX} width={width}
                                                   selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
                                                   panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
                                                   >
+
             <OnPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
                                     minX={minX} maxX={maxX} height={height} width={width}
                                     startX={onPlotXRangeSelection_StartDataX+onPlotXRangeSelection_LeftDeltaDataX}
@@ -120,12 +101,6 @@ class RespPlotBundle extends Component {
                                     />
           </DualPhaseXInteractionBoxWithReference>
         </HoverSelectionXInteractionBoxWithReference>
-        {/*X Axis*/}
-        <div style={{position:"absolute",width:width,height:BOTTOM,left:LEFT,top:height+TOP}}>
-          <XAxisDate minX={minX} maxX={maxX} height={BOTTOM} width={width}
-                     style={{position:"absolute",left:0,top:0}}
-                     />
-        </div>
       </div>
     );
   }
@@ -221,10 +196,10 @@ class RespPlotBundle extends Component {
   }
 }
 
-RespPlotBundle.prototype.LEFT=150;
-RespPlotBundle.prototype.RIGHT=0;
-RespPlotBundle.prototype.TOP=0;
-RespPlotBundle.prototype.BOTTOM=50;
+LocationBundle.prototype.LEFT=150;
+LocationBundle.prototype.RIGHT=0;
+LocationBundle.prototype.TOP=0;
+LocationBundle.prototype.BOTTOM=0;
 
 const mapStateToProps = function (state,ownProps) {
   return {
@@ -254,10 +229,10 @@ const mapDispatchToProps = function (dispatch) {
   };
 };
 
-const RespPlotBundleConnector = connect(
+const LocationBundleConnector = connect(
   mapStateToProps,
   mapDispatchToProps
-)(RespPlotBundle);
+)(LocationBundle);
 
-export default RespPlotBundleConnector
+export default LocationBundleConnector;
 

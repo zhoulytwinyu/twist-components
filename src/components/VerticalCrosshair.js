@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import {toDomXCoord_Linear} from "plot-utils";
         
-class VerticalCrosshair extends Component {
+class VerticalCrosshair extends PureComponent {
   constructor(props) {
     super(props);
     this.ref= React.createRef();
@@ -29,6 +29,9 @@ class VerticalCrosshair extends Component {
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
+    if (hoverDataX===undefined || hoverDataX===null) {
+      return;
+    }
     let hoverDomX = this.toDomXCoord(hoverDataX);
     ctx.fillRect(hoverDomX-0.5,0,1,1);
   }

@@ -1,20 +1,22 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
-import {toDomYCoord_Linear} from "plot-utils";
+import {toDomYCoord_Linear,
+        applyCanvasStyle,
+        drawTextInRect} from "plot-utils";
 
 class YAxisPanel extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
-    this.toDomYCoord = this.toDomYCoord.bind(this);
   }
   
   render() {
-    let {width, height, minY, maxY,
-         categoryPosition, subcategoryPosition,
-         categoryColors, subcategoryColors, ...rest} = this.props;
+    let { category, /* [{name,start,end[,bgStyle,textStyle,textPosition:[1-9],textRotation]}] */
+          height, minY, maxY,
+          width,
+          ...rest} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={height} {...rest}> </canvas>
+      <canvas ref={this.ref} width={width} height={height}></canvas>
     );
   }
   
@@ -27,75 +29,80 @@ class YAxisPanel extends PureComponent {
   }
   
   draw(){
-    let {width,height} = this.props;
-    let {categoryPosition, subcategoryPosition,
-         categoryColors, subcategoryColors} = this.props;
-    let {CATEGORY_WIDTH} = this;
+    let { category,
+          width,
+          height} = this.props;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
-    // Prepare category for plotting
-    let categoryDomX = CATEGORY_WIDTH/2;
-    let categoryDomY_Top = categoryPosition.map( ({start})=>this.toDomYCoord(start) );
-    let categoryDomY_Bottom = categoryPosition.map( ({end})=>this.toDomYCoord(end) );
-    let categoryDomY_Center = categoryPosition.map( ({start,end})=>this.toDomYCoord((start+end)/2) );
-    let categoryLabels = categoryPosition.map( ({name})=>name );
-    // Draw category bg
-    for (let i=0; i<categoryDomY_Top.length; i++) {
-      let domYTop = categoryDomY_Top[i];
-      let domYBottom = categoryDomY_Bottom[i];
-      let color = categoryColors[i%categoryColors.length];
-      ctx.fillStyle = color;
-      ctx.fillRect(0,domYTop,CATEGORY_WIDTH,domYBottom-domYTop);
-    }
-    // Draw category label
-    ctx.fillStyle="white";
-    ctx.strokeStyle="grey";
-    ctx.lineWidth=1;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    for (let i=0; i<categoryLabels.length; i++) {
-      let domYCenter = categoryDomY_Center[i];
-      let label = categoryLabels[i];
-      if (label.startsWith('.')) {
+    
+    let processedCategory = category.map( ({start,end,...rest})=>({ domStart: this.toDomYCoord(end),
+                                                                    domEnd: this.toDomYCoord(start),
+                                                                    ...rest
+                                                                    })
+                                          ) // Drops start,end
+                                    .map( ({domStart,domEnd,textPosition,...rest})=>{ if (textPosition===undefined || textPosition===null ) {
+                                                                                        textPosition=3;
+                                                                                      }
+                                                                                      let {x,y}= this.getSubPositionLUT(width,domEnd-domStart,textPosition);
+                                                                                      return ({ textDomX:x,
+                                                                                                textDomY:domStart+y,
+                                                                                                domStart,
+                                                                                                domEnd,
+                                                                                                ...rest
+                                                                                                });
+                                                                                      }
+                                          ); // Drops textPosition
+    // Draw BG
+    for (let {domStart,domEnd,bgStyle} of processedCategory) {
+      if (!bgStyle) {
         continue;
       }
-      //TODO: Simplify text based on given width TODO
-      ctx.translate(categoryDomX,domYCenter);
-      ctx.rotate(-Math.PI/2);
-      ctx.fillText(label,0,0);
-      ctx.strokeText(label,0,0);
-      ctx.rotate(Math.PI/2);
-      ctx.translate(-categoryDomX,-domYCenter);
+      applyCanvasStyle(ctx,bgStyle);
+      ctx.fillRect(0,domStart,width,domEnd-domStart);
     }
-    // Prepare subcategory for plotting
-    let subcategoryDomX = CATEGORY_WIDTH;
-    let subcategoryDomY_Top = subcategoryPosition.map( ({start})=>this.toDomYCoord(start) );
-    let subcategoryDomY_Bottom = subcategoryPosition.map( ({end})=>this.toDomYCoord(end) );
-    let subcategoryDomY_Center = subcategoryPosition.map( ({start,end})=>this.toDomYCoord((start+end)/2) );
-    let subcategoryLabels = subcategoryPosition.map( ({name})=>name );
-    // Draw subcategory bg
-    for (let i=0; i<subcategoryDomY_Top.length; i++) {
-      let domYTop = subcategoryDomY_Top[i];
-      let domYBottom = subcategoryDomY_Bottom[i];
-      let color = subcategoryColors[i%subcategoryColors.length];
-      ctx.fillStyle = color;
-      ctx.fillRect(subcategoryDomX,domYTop,width-subcategoryDomX,domYBottom-domYTop);
-    }
-    // Draw subcategory label
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    ctx.fillStyle="black";
-    for (let i=0; i<subcategoryLabels.length; i++) {
-      let domYCenter = subcategoryDomY_Center[i];
-      let label = subcategoryLabels[i];
-      if (label.startsWith('.')) {
+    // Draw text
+    for (let {name,domStart,domEnd,textStyle,textDomX,textDomY,textRotation} of processedCategory) {
+      if ( (!textStyle) || (!name) ) {
         continue;
       }
-      // TODO: Simplify text based on given width
-      ctx.fillText(label,subcategoryDomX+5,domYCenter);
+      drawTextInRect(ctx,0,domStart,width,domEnd-domStart,
+                     name,textDomX,textDomY,textStyle,textRotation);
     }
-    ctx.restore();
+  }
+  
+  getSubPositionLUT(width,rowHeight,positionID) {
+    /*
+     * +-----+
+     * |0 1 2|
+     * |3 4 5|
+     * |6 7 8|
+     * +-----+
+     */
+    let subRowHeight = rowHeight/10;
+    let subColWidth = width/10;
+    switch (positionID){
+      case 0:
+        return {x:subColWidth*1,y:subRowHeight*1};
+      case 1:
+        return {x:subColWidth*5,y:subRowHeight*1};
+      case 2:
+        return {x:subColWidth*9,y:subRowHeight*1};
+      case 3:
+        return {x:subColWidth*1,y:subRowHeight*5};
+      case 4:
+        return {x:subColWidth*5,y:subRowHeight*5};
+      case 5:
+        return {x:subColWidth*9,y:subRowHeight*5};
+      case 6:
+        return {x:subColWidth*1,y:subRowHeight*9};
+      case 7:
+        return {x:subColWidth*5,y:subRowHeight*9};
+      case 8:
+        return {x:subColWidth*9,y:subRowHeight*9};
+      default:
+        throw new Error("UserTooStupid");
+    }
   }
   
   toDomYCoord(dataY){
@@ -107,3 +114,4 @@ class YAxisPanel extends PureComponent {
 YAxisPanel.prototype.CATEGORY_WIDTH = 30;
 
 export default YAxisPanel;
+

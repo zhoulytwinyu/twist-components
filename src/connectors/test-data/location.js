@@ -5,4 +5,4 @@ const location = [
   {name:"home",start:32000,end:180000}
 ];
 
-export default location
+export default location;

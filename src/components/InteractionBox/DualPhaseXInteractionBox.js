@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import {fromDomXCoord_Linear} from "plot-utils";
 
-class TriPhaseInteractionBox extends PureComponent {
+class DualPhaseInteractionBox extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
@@ -29,59 +29,54 @@ class TriPhaseInteractionBox extends PureComponent {
     ev.stopPropagation();
     this.mouseDownClientX = ev.clientX;
     this.moved = false;
-    this.setModeCascade("clicking");
+    this.setModeCascade("selecting");
     document.addEventListener("mousemove",this.handleDocumentMouseMove);
     document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
   
   handleDocumentMouseUp = (ev) => {
+    clearTimeout(this.timeout);
     document.removeEventListener("mousemove",this.handleDocumentMouseMove);
     document.removeEventListener("mouseup",this.handleDocumentMouseUp);
-    clearTimeout(this.timeout);
-    let startDomX = this.mouseDownClientX-this.ref.current.getBoundingClientRect().left;
-    let endDomX = ev.clientX-this.ref.current.getBoundingClientRect().left;
-    switch (this.mode) {
-      case "clicking":
-        let {clickedHandler} = this.props;
-        if (!clickedHandler) {
+    if (this.moved) {
+      let startDomX = this.mouseDownClientX-this.ref.current.getBoundingClientRect().left;
+      let endDomX = ev.clientX-this.ref.current.getBoundingClientRect().left;
+      switch (this.mode) {
+        case "selecting":
+          let {selectedHandler} = this.props;
+          if (!selectedHandler) {
+            break;
+          }
+          selectedHandler({ startDomX,
+                            endDomX
+                            });
           break;
-        }
-        clickedHandler({domX:startDomX});
-        break;
-      case "selecting":
-        let {selectedHandler} = this.props;
-        if (!selectedHandler) {
+        case "panning":
+          let {pannedHandler} = this.props;
+          if (!pannedHandler) {
+            break;
+          }
+          pannedHandler({startDomX,endDomX});
           break;
-        }
-        selectedHandler({ startDomX,
-                          endDomX
-                          });
-        break;
-      case "panning":
-        let {pannedHandler} = this.props;
-        if (!pannedHandler) {
-          break;
-        }
-        pannedHandler({startDomX,endDomX});
-        break;
-      default:
-        throw new Error("UserTooStupidError");
+        default:
+          throw new Error("ProgrammerTooStupidError");
+      }
     }
     this.setHovering();
   }
   
   handleDocumentMouseMove = (ev) => {
-    this.moved = true;
+    if (!this.moved && Math.abs(ev.clientX-this.mouseDownClientX)>5) {
+      this.moved = true;
+    }
+    if (!this.moved) {
+      return;
+    }
     let deltaDomX = null;
     let deltaDataX = null;
     let startDomX = this.mouseDownClientX-this.ref.current.getBoundingClientRect().left;
     let endDomX = ev.clientX-this.ref.current.getBoundingClientRect().left;
     switch (this.mode){
-      case "clicking":
-        clearTimeout(this.timeout);
-        this.setSelecting();
-        this.handleDocumentMouseMove(ev);
-        break;
       case "selecting":
         let {selectingHandler} = this.props;
         if (!selectingHandler) {
@@ -99,20 +94,16 @@ class TriPhaseInteractionBox extends PureComponent {
         panningHandler({startDomX,endDomX});
         break;
       default:
-        throw new Error("UserTooDumpError");
+        throw new Error("ProgrammerTooStupidError");
     }
   }
 
   setModeCascade = (targetMode)=>{
     switch (targetMode) {
-      case "clicking":
-        this.setClicking();
-        this.timeout = setTimeout(this.setModeCascade,200,"selecting");
-        break;
       case "selecting":
         if (!this.moved) {
           this.setSelecting();
-          this.timeout = setTimeout(this.setModeCascade,1000,"panning");
+          this.timeout = setTimeout(this.setModeCascade,500,"panning");
         }
         break;
       case "panning":
@@ -130,11 +121,6 @@ class TriPhaseInteractionBox extends PureComponent {
     document.body.style.cursor = "auto";
   }
   
-  setClicking() {
-    this.mode = "clicking";
-    document.body.style.cursor = "auto";
-  }
-  
   setSelecting() {
     this.mode = "selecting";
     document.body.style.cursor = "ew-resize";
@@ -147,4 +133,4 @@ class TriPhaseInteractionBox extends PureComponent {
   }
 }
 
-export default TriPhaseInteractionBox;
+export default DualPhaseInteractionBox;
