@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
-import {toDomXCoord_Linear,
-        scatterPlot} from "plot-utils";
+import {toDomXCoord_Linear} from "plot-utils";
         
 class LocationPlot extends PureComponent {
   constructor(props){
@@ -12,12 +11,10 @@ class LocationPlot extends PureComponent {
   render() {
     let { data, /*[{name,start,end},...]*/
           minX,maxX,width,
-          style,
+          hoverDataX,
           ...rest} = this.props;
     return (
-      <div style={{...style,backgroundColor:"beige"}} {...rest}>
-        <canvas ref={this.ref} height={1} width={width} style={{position:"absolute",width:"100%",height:"50%",top:"25%"}}></canvas>
-      </div>
+      <canvas ref={this.ref} height={1} width={width} {...rest}></canvas>
     );
   }
 
@@ -34,6 +31,10 @@ class LocationPlot extends PureComponent {
           minX,maxX,width} = this.props;
     let preprocessedData = this.convertNameToColor(data,this.COLOR_LUT);
     preprocessedData = preprocessedData.filter( ({start,end})=> !(start>maxX || end<minX) );
+    preprocessedData = preprocessedData.map( ({start,end,...rest})=> ({ start:Math.max(minX,start),
+                                                                        end:Math.min(maxX,end),
+                                                                        ...rest
+                                                                        }))
     preprocessedData = preprocessedData.map(({start,end,...rest})=>({ domStart: this.toDomXCoord(start),
                                                                       domEnd: this.toDomXCoord(end),
                                                                       ...rest
@@ -44,7 +45,8 @@ class LocationPlot extends PureComponent {
     // Clear plots
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
-    
+    ctx.fillStyle = "lightgrey";
+    ctx.fillRect(0,0,width,1);
     // Plot
     for (let {color,domStart,domEnd} of preprocessedData) {
       ctx.fillStyle=color;

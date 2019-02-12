@@ -16,7 +16,8 @@ class HoverInteractionBoxWithReference extends PureComponent {
           ...rest} = this.props;
     return (
       <HoverInteractionBox  {...rest}
-                            hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
+                            hoveringHandler={this.hoveringHandler}
+                            mouseOutHandler={this.mouseOutHandler}
                             >
         {children}
       </HoverInteractionBox>
@@ -30,7 +31,7 @@ class HoverInteractionBoxWithReference extends PureComponent {
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    hoveringHandler({dataX,dataY});
+    hoveringHandler({dataX,dataY,domX,domY});
   }
   
   mouseOutHandler = ({domX,domY}) => {
@@ -40,7 +41,7 @@ class HoverInteractionBoxWithReference extends PureComponent {
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    mouseOutHandler({dataX,dataY});
+    mouseOutHandler({dataX,dataY,domX,domY});
   }
   
   fromDomXCoord(domX) {

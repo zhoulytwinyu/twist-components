@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
 import {toDomCoord_Categorical,
-        applyCanvasStyle} from "plot-utils";
+        applyCanvasStyle,
+        drawTextInRect} from "plot-utils";
 
 class YCategoricalPanel extends PureComponent {
   constructor(props){
@@ -10,9 +11,10 @@ class YCategoricalPanel extends PureComponent {
   }
   
   render() {
-    let { category, /* [{name,start,end[,bgStyle,textStyle,textPosition:[1-9],textRotation]}] */
+    let { category, /* [{name,start,end[,bgStyle,textStyle,textPosition:[0-8],textRotation]}] */
           width,
           height,
+          rowHeight,
           ...rest} = this.props;
     return (
       <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
@@ -61,20 +63,12 @@ class YCategoricalPanel extends PureComponent {
       ctx.fillRect(0,domStart,width,domEnd-domStart);
     }
     // Draw text
-    for (let {name,textStyle,textDomX,textDomY,textRotation} of processedCategory) {
+    for (let {name,domStart,domEnd,textStyle,textDomX,textDomY,textRotation} of processedCategory) {
       if ( (!textStyle) || (!name) ) {
         continue;
       }
-      textRotation = textRotation || 0;
-      applyCanvasStyle(ctx,textStyle);
-      ctx.translate(textDomX,textDomY);
-      ctx.rotate(textRotation);
-      if ("strokeStyle" in textStyle) {
-        ctx.strokeText(name,0,0);
-      }
-      ctx.fillText(name,0,0);
-      ctx.rotate(-textRotation);
-      ctx.translate(-textDomX,-textDomY);
+      drawTextInRect(ctx,0,domStart,width,domEnd-domStart,
+                     name,textDomX,textDomY,textStyle,textRotation);
     }
   }
   
@@ -113,8 +107,7 @@ class YCategoricalPanel extends PureComponent {
   }
   
   toDomYCoord(dataY){
-    let {category,height} = this.props;
-    let rowHeight = height/category.length
+    let {height,rowHeight} = this.props;
     return dataY*rowHeight;
   }
 }

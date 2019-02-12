@@ -8,7 +8,6 @@ class HoverSelectionXInteractionBoxWithReference extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
-    this.getXArray = memoize_one(this.getXArray);
   }
   
   render(){
@@ -26,9 +25,9 @@ class HoverSelectionXInteractionBoxWithReference extends PureComponent {
     );
   }
   
-  getXArray(data) {
+  getXArray = memoize_one((data) {
     return data.map( ({x})=>x );
-  }
+  });
   
   hoveringHandler = ({dataX,dataY}) => {
     let {x,data} = this.props;

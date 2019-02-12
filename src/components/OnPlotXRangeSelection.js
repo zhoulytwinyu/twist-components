@@ -31,28 +31,28 @@ class OnPlotXRangeSelection extends PureComponent {
                                     width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
                                     cursor:"w-resize"
                                     }}
-                            dragCursor="w-resize" draggingHandler={this.handleDraggingLeft} draggedHandler={this.handleDraggedLeft}
+                            draggingHandler={this.handleDraggingLeft} draggedHandler={this.handleDraggedLeft}
                             />
         {/* right handle */}
         <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:rightHandleLeft,
                                     width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
                                     cursor:"e-resize"
                                     }}
-                            dragCursor="e-resize" draggingHandler={this.handleDraggingRight} draggedHandler={this.handleDraggedRight}
+                            draggingHandler={this.handleDraggingRight} draggedHandler={this.handleDraggedRight}
                             />
         {/* top handle */}
         <DragInteractionBox style={{position:"absolute", top:0, left:topHandleLeft,
                                     width:topHandleWidth, height:TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
-                                    cursor:"grabbing"
+                                    cursor:"grab"
                                     }}
-                            dragCursor="grabbing" draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
+                            draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
                             />
         {/* main box */}
         <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:mainBoxLeft,
                                     width:mainBoxWidth, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
-                                    cursor:"grabbing"
+                                    cursor:"grab"
                                     }}
-                            dragCursor="grabbing" draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
+                            draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
                             />
       </div>
     );

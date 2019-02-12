@@ -8,7 +8,7 @@ class VerticalCrosshair extends PureComponent {
   }
   
   render() {
-    let { hoverDataX,
+    let { hoverX,
           minX,maxX,width,
           ...rest} = this.props;
     return (
@@ -25,14 +25,14 @@ class VerticalCrosshair extends PureComponent {
   }
   
   draw() {
-    let {hoverDataX,width} = this.props;
+    let {hoverX,width} = this.props;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
-    if (hoverDataX===undefined || hoverDataX===null) {
+    if (hoverX===undefined || hoverX===null) {
       return;
     }
-    let hoverDomX = this.toDomXCoord(hoverDataX);
+    let hoverDomX = this.toDomXCoord(hoverX);
     ctx.fillRect(hoverDomX-0.5,0,1,1);
   }
   

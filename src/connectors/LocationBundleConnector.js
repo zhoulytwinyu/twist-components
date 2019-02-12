@@ -8,14 +8,14 @@ import VerticalGrid from "../components/VerticalGrid";
 import HorizontalSlabGrid from "../components/HorizontalSlabGrid";
 import RespiratoryPlot from "../components/RespiratoryPlot";
 import LocationPlot from "../components/LocationPlot";
+import LocationPlotHoverLabel from "../components/LocationPlotHoverLabel";
 import ProcedurePlot from "../components/ProcedurePlot";
 import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection";
 import VerticalCrosshair from "../components/VerticalCrosshair";
-import HoverSelectionXInteractionBoxWithReference from "../components/InteractionBox/HoverSelectionXInteractionBoxWithReference";
 import SelectionPoint from "../components/SelectionPoint";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
-import DualPhaseXInteractionBoxWithReference from "../components/InteractionBox/DualPhaseXInteractionBoxWithReference";
-
+import HoverInteractionBoxWithReference from "../components/InteractionBox/HoverInteractionBoxWithReference";
+import TriPhaseXInteractionBoxWithReference from "../components/InteractionBox/TriPhaseXInteractionBoxWithReference";
 
 import location from "./test-data/location";
 import procedures from "./test-data/procedures";
@@ -30,11 +30,10 @@ class LocationBundle extends Component {
   render() {
     let { minX,maxX,
           minY,maxY,
-          text,
           hoverX,hoverY,
+          verticalCrosshair_X,
           hoverSelection,
-          height, width,
-          selectorMinX,selectorMaxX,
+          height,width,
           inPlotXRangeSelectionStartDataX,inPlotXRangeSelectionEndDataX,
           onPlotXRangeSelection_StartDataX,onPlotXRangeSelection_EndDataX,
           onPlotXRangeSelection_LeftDeltaDataX,onPlotXRangeSelection_RightDeltaDataX,
@@ -51,24 +50,27 @@ class LocationBundle extends Component {
           <YCategoricalPanel  style={{position:"absolute",width:30,height:height}}
                               category={[ {start:0,end:1,bgStyle:{fillStyle:"grey"}}
                                           ]}
-                              width={LEFT} height={height}
+                              width={LEFT} height={height} rowHeight={height}
                               />
           <YCategoricalPanel  style={{position:"absolute",width:LEFT-30,height:height,left:30}}
                               category={[ {start:0,end:1,bgStyle:{fillStyle:"red"},name:"Location",textStyle:{fillStyle:"black",font:"bold 16px Sans",textAlign:"left",textBaseline:"middle"},textPosition:3}
                                           ]}
-                              width={LEFT} height={height}
+                              width={LEFT} height={height} rowHeight={height}
                               />
         </div>
-        <div style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}>
+        <div style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP,backgroundColor:"#fff5e9"}}>
             <VerticalGrid style={{position:"absolute",width:width,height:height}}
                           grid={[{x:2000},{x:8000},{x:16000}]}
                           minX={minX} maxX={maxX} width={width}
                           />
-            <LocationPlot style={{position:"absolute",height:height,width:width}}
+            <LocationPlot style={{position:"absolute",height:height/2,width:width,top:height/4}}
                           minX={minX} maxX={maxX} width={width}
-                          data={location} />
+                          data={location}/>
+            <LocationPlotHoverLabel style={{position:"absolute",height:height/2,width:width,top:height/4}}
+                          minX={minX} maxX={maxX} width={width}
+                          data={location} hoverDataX={hoverX}/>
             <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
-                               hoverDataX={hoverX}
+                               hoverX={verticalCrosshair_X}
                                minX={minX} maxX={maxX} width={width}
                                />
             <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
@@ -76,18 +78,19 @@ class LocationBundle extends Component {
                                     minX={minX} maxX={maxX} width={width}/>
         </div>
         {/*Plot Area*/}
-        <HoverSelectionXInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
-                                                    minX={minX} maxX={maxX} width={width}
-                                                    minY={minY} maxY={maxY} height={height}
-                                                    data={selectionData}
-                                                    hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
-                                                    selectHandler={this.hoverSelectionHandler} >
-          <DualPhaseXInteractionBoxWithReference  style={{position:"absolute",width:width,height:height}}
+        <HoverInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
                                                   minX={minX} maxX={maxX} width={width}
-                                                  selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
-                                                  panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
+                                                  minY={1} maxY={0} height={height}
+                                                  hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
                                                   >
-
+          <TriPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+                                                minX={minX} maxX={maxX} width={width}
+                                                minY={1} maxY={0} height={height}
+                                                clickedHandler={console.log}
+                                                doubleClickHandler={console.log}
+                                                selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
+                                                panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
+                                                >
             <OnPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
                                     minX={minX} maxX={maxX} height={height} width={width}
                                     startX={onPlotXRangeSelection_StartDataX+onPlotXRangeSelection_LeftDeltaDataX}
@@ -99,16 +102,19 @@ class LocationBundle extends Component {
                                     draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
                                     draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
                                     />
-          </DualPhaseXInteractionBoxWithReference>
-        </HoverSelectionXInteractionBoxWithReference>
+          </TriPhaseXInteractionBoxWithReference>
+        </HoverInteractionBoxWithReference>
       </div>
     );
   }
   
-  hoveringHandler = ({dataX,dataY}) => {
+  hoveringHandler = ({dataX,dataY,domX,domY}) => {
     let {changeHandler} = this.props;
-    changeHandler({ hoverX:dataX,
-                    hoverY:dataY
+    changeHandler({ hoverX: dataX,
+                    hoverDomX: domX,
+                    verticalCrosshair_X: dataX,
+                    hoverY: null,
+                    hoverDomY: null
                     });
   }
   
@@ -207,18 +213,28 @@ const mapStateToProps = function (state,ownProps) {
     maxX: state.plot.maxX,
     minY: state.plot.minY,
     maxY: state.plot.maxY,
-    selectorMinX: state.plot.selectorMinX || 1000,
-    selectorMaxX: state.plot.selectorMaxX || 2000,
-    text: state.plot.text,
-    hoverX: state.plot.hoverX,
-    hoverSelection: state.plot.hoverSelection,
-    inPlotXRangeSelectionStartDataX: state.plot.inPlotXRangeSelectionStartDataX || null,
-    inPlotXRangeSelectionEndDataX: state.plot.inPlotXRangeSelectionEndDataX || null,
-    onPlotXRangeSelection_StartDataX: state.plot.onPlotXRangeSelection_StartDataX || null,
-    onPlotXRangeSelection_EndDataX: state.plot.onPlotXRangeSelection_EndDataX || null,
-    onPlotXRangeSelection_LeftDeltaDataX: state.plot.onPlotXRangeSelection_LeftDeltaDataX || 0,
-    onPlotXRangeSelection_RightDeltaDataX: state.plot.onPlotXRangeSelection_RightDeltaDataX || 0,
-    panningDataX: state.plot.panningDataX || 0,
+    panningX: state.plot.panningX || 0,
+    hoverX: state.plot.hoverX || null,
+    hoverY: state.plot.hoverY || null,
+    hoverDomX: state.plot.hoverDomX || null,
+    hoverDomY: state.plot.hoverDomX || null,
+    clickX: state.plot.clickX || null,
+    clickY: state.plot.clickY || null,
+    clickDomX: state.plot.clickDomX || null,
+    clickDomY: state.plot.clickDomX || null,
+    doubleClickX: state.plot.doubleClickX || null,
+    doubleClickY: state.plot.doubleClickY || null,
+    doubleClickDomX: state.plot.doubleClickDomX || null,
+    doubleClickDomY: state.plot.doubleClickDomY || null,
+    verticalCrosshair_X: state.plot.verticalCrosshair_X || null,
+    dataPoint_hoverSelection: state.plot.dataPoint_hoverSelection || null,
+    inPlotXRangeSelection_StartX: state.plot.inPlotXRangeSelection_StartX || null,
+    inPlotXRangeSelection_EndX: state.plot.inPlotXRangeSelection_EndX || null,
+    onPlotXRangeSelection_StartX: state.plot.onPlotXRangeSelection_StartX || 0,
+    onPlotXRangeSelection_EndX: state.plot.onPlotXRangeSelection_EndX || 2000,
+    onPlotXRangeSelection_LeftDeltaX: state.plot.onPlotXRangeSelection_LeftDeltaX || 0,
+    onPlotXRangeSelection_RightDeltaX: state.plot.onPlotXRangeSelection_RightDeltaX || 0,
+    procedurePlotClickSelectionAddon_clickSelection: state.plot.onPlotXRangeSelection_RightDeltaX || null,
     ...ownProps
   };
 };

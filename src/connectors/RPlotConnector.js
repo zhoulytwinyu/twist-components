@@ -1,7 +1,8 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 import {changeTopLevelPlot} from "../actions/plot-actions";
 // Import components
+import HoverSelectionAddon from "../components/HoverSelectionAddon";
 import XAxisDate from "../components/XAxisDate";
 import YAxisPanel from "../components/YAxisPanel";
 import VerticalGrid from "../components/VerticalGrid";
@@ -9,12 +10,13 @@ import HorizontalSlabGrid from "../components/HorizontalSlabGrid";
 import RespiratoryPlot from "../components/RespiratoryPlot";
 import LocationPlot from "../components/LocationPlot";
 import ProcedurePlot from "../components/ProcedurePlot";
+import ProcedurePlotClickSelectionAddon from "../components/ProcedurePlotClickSelectionAddon";
 import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection";
 import VerticalCrosshair from "../components/VerticalCrosshair";
-import HoverSelectionXInteractionBoxWithReference from "../components/InteractionBox/HoverSelectionXInteractionBoxWithReference";
+import HoverInteractionBoxWithReference from "../components/InteractionBox/HoverInteractionBoxWithReference";
 import SelectionPoint from "../components/SelectionPoint";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
-import DualPhaseXInteractionBoxWithReference from "../components/InteractionBox/DualPhaseXInteractionBoxWithReference";
+import TriPhaseXInteractionBoxWithReference from "../components/InteractionBox/TriPhaseXInteractionBoxWithReference";
 
 
 import location from "./test-data/location";
@@ -31,26 +33,47 @@ let yLimitPosition = [{name:"ECMO",start:80,end:100},{name:"Haha",start:0,end:80
 let yLimitCategoryColors = ["yellow","orange","cyan"];
 let yLimitColors = ["red","blue"];
 
-class RespPlotBundle extends Component {
+class RespPlotBundle extends PureComponent {
   render() {
     let { minX,maxX,
           minY,maxY,
-          text,
-          hoverX,hoverY,
-          hoverSelection,
-          height, width,
-          selectorMinX,selectorMaxX,
-          inPlotXRangeSelectionStartDataX,inPlotXRangeSelectionEndDataX,
-          onPlotXRangeSelection_StartDataX,onPlotXRangeSelection_EndDataX,
-          onPlotXRangeSelection_LeftDeltaDataX,onPlotXRangeSelection_RightDeltaDataX,
-          panningDataX
+          panningX,
+          hoverX, hoverY,
+          hoverDomX, hoverDomY,
+          clickX, clickY,
+          clickDomX, clickDomY,
+          verticalCrosshair_X,
+          dataPoint_hoverSelection,
+          inPlotXRangeSelection_StartX,inPlotXRangeSelection_EndX,
+          onPlotXRangeSelection_StartX,onPlotXRangeSelection_EndX,
+          onPlotXRangeSelection_LeftDeltaX,onPlotXRangeSelection_RightDeltaX,
+          procedurePlotClickSelectionAddon_clickSelection,
+          height,width
           } = this.props;
     let { changeHandler } = this.props;
     let {LEFT,RIGHT,TOP,BOTTOM} = this;
-    minX = minX-panningDataX;
-    maxX = maxX-panningDataX;
+    minX = minX-panningX;
+    maxX = maxX-panningX;
+    
     return (
       <div style={{position:"relative", width:LEFT+RIGHT+width, height:TOP+BOTTOM+height}}>
+        {/*No-Render Addons*/}
+        {/*select plot data points*/}
+        <HoverSelectionAddon  data={selectionData}
+                              hoverX={hoverX}
+                              selectHandler={this.dataPoint_selectHandler}
+                              />
+        {/*select last major procedure*/}
+        <HoverSelectionAddon  data={selectionData}
+                              hoverX={hoverX}
+                              mode="left"
+                              selectHandler={this.lastMajorProcedure_selectHandler}
+                              />
+        {/*select procedure on click*/}
+        <ProcedurePlotClickSelectionAddon data={procedures}
+                                          clickDomX={clickDomX} clickDomY={clickDomY}
+                                          selectHandler={this.procedurePlotClickSelectionAddon_selectHandler}
+                                          />
         {/*Y Axis*/}
         <div style={{position:"absolute",width:LEFT,height:height,top:TOP}}>
           <YAxisPanel style={{position:"absolute",width:LEFT,height:height}}
@@ -76,7 +99,7 @@ class RespPlotBundle extends Component {
           <RespiratoryPlot  style={{position:"absolute",width:width,height:height}}
                             x={plot1x} ys={plot1ys}
                             minX={minX} maxX={maxX} width={width}
-                            minY={minY} maxY={maxY} height={height} 
+                            minY={minY} maxY={maxY} height={height}
                             />
           <ProcedurePlot  style={{position:"absolute",width:width,height:height}}
                           data = {procedures}
@@ -84,33 +107,35 @@ class RespPlotBundle extends Component {
                           minX={minX} maxX={maxX} width={width} height={height}
                           />
           <SelectionPoint style={{position:"absolute",width:width,height:height}}
-                          selection={hoverSelection}
+                          selection={dataPoint_hoverSelection}
                           minX={minX} maxX={maxX} width={width}
                           minY={minY} maxY={maxY} height={height} 
                           />
           <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
-                             hoverDataX={hoverX}
+                             hoverX={verticalCrosshair_X}
                              minX={minX} maxX={maxX} width={width}
                              />
           <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
-                                  startDataX={inPlotXRangeSelectionStartDataX} endDataX={inPlotXRangeSelectionEndDataX}
+                                  startDataX={inPlotXRangeSelection_StartX} endDataX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={width}/>
         </div>
-        <HoverSelectionXInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
-                                                    minX={minX} maxX={maxX} width={width}
-                                                    minY={minY} maxY={maxY} height={height}
-                                                    data={selectionData}
-                                                    hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
-                                                    selectHandler={this.hoverSelectionHandler} >
-          <DualPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+        <HoverInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
                                                   minX={minX} maxX={maxX} width={width}
-                                                  selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
-                                                  panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
+                                                  minY={minY} maxY={maxY} height={height}
+                                                  hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
+                                                  >
+          <TriPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+                                                  minX={minX} maxX={maxX} width={width}
+                                                  minY={minY} maxY={maxY} height={height}
+                                                  clickedHandler={this.plot_clickedHandler}
+                                                  doubleClickHandler={this.plot_doubleClickHandler}
+                                                  selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
+                                                  panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
                                                   >
             <OnPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
                                     minX={minX} maxX={maxX} height={height} width={width}
-                                    startX={onPlotXRangeSelection_StartDataX+onPlotXRangeSelection_LeftDeltaDataX}
-                                    endX={onPlotXRangeSelection_EndDataX+onPlotXRangeSelection_RightDeltaDataX}
+                                    startX={onPlotXRangeSelection_StartX+onPlotXRangeSelection_LeftDeltaX}
+                                    endX={onPlotXRangeSelection_EndX+onPlotXRangeSelection_RightDeltaX}
                                     draggingLeftHandler={this.onPlotXRangeSelection_DraggingLeftHandler}
                                     draggingMainHandler={this.onPlotXRangeSelection_DraggingMainHandler}
                                     draggingRightHandler={this.onPlotXRangeSelection_DraggingRightHandler}
@@ -118,8 +143,8 @@ class RespPlotBundle extends Component {
                                     draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
                                     draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
                                     />
-          </DualPhaseXInteractionBoxWithReference>
-        </HoverSelectionXInteractionBoxWithReference>
+          </TriPhaseXInteractionBoxWithReference>
+        </HoverInteractionBoxWithReference>
         {/*X Axis*/}
         <div style={{position:"absolute",width:width,height:BOTTOM,left:LEFT,top:height+TOP}}>
           <XAxisDate minX={minX} maxX={maxX} height={BOTTOM} width={width}
@@ -130,93 +155,126 @@ class RespPlotBundle extends Component {
     );
   }
   
-  hoveringHandler = ({dataX,dataY}) => {
+  plot_clickedHandler = ({dataX,dataY,domX,domY}) => {
+    let {changeHandler} = this.props;
+    changeHandler({ clickX:dataX,
+                    clickY:dataY,
+                    clickDomX:domX,
+                    clickDomY:domY
+                    });
+  }
+  
+  plot_doubleClickHandler = ({dataX,dataY,domX,domY}) => {
+    let {changeHandler} = this.props;
+    changeHandler({ doubleClickDataX:dataX,
+                    doubleClickDataY:dataY,
+                    doubleClickDomX:domX,
+                    doubleClickDomY:domY
+                    });
+  }
+
+  plot_hoveringHandler = ({dataX,dataY,domX,domY}) => {
     let {changeHandler} = this.props;
     changeHandler({ hoverX:dataX,
-                    hoverY:dataY
+                    hoverY:dataY,
+                    hoverDomX:domX,
+                    hoverDomY:domY,
+                    verticalCrosshair_X:dataX
                     });
   }
   
-  mouseOutHandler = ({dataX,dataY}) => {
+  plot_mouseOutHandler = () => {
     let {changeHandler} = this.props;
     changeHandler({ hoverX:null,
-                    hoverY:null
+                    hoverY:null,
+                    hoverDomX:null,
+                    hoverDomY:null
                     });
   }
   
-  hoverSelectionHandler = ({selection}) => {
+  plot_selectingHandler = ({startDataX,endDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({hoverSelection:selection});
+    changeHandler({inPlotXRangeSelection_StartX:startDataX,
+                   inPlotXRangeSelection_EndX:endDataX});
   }
   
-  selectingHandler = ({startDataX,endDataX}) => {
+  plot_selectedHandler = ({startDataX,endDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({inPlotXRangeSelectionStartDataX:startDataX,
-                   inPlotXRangeSelectionEndDataX:endDataX});
+    changeHandler({minX: Math.min(startDataX,endDataX),
+                   maxX: Math.max(startDataX,endDataX),
+                   inPlotXRangeSelection_StartX: null,
+                   inPlotXRangeSelection_EndX: null});
   }
   
-  selectedHandler = ({startDataX,endDataX}) => {
-    let {changeHandler} = this.props;
-    changeHandler({minX:Math.min(startDataX,endDataX),
-                   maxX:Math.max(startDataX,endDataX),
-                   inPlotXRangeSelectionStartDataX:null,
-                   inPlotXRangeSelectionEndDataX:null});
-  }
-  
-  panningHandler = ({startDataX,endDataX}) => {
+  plot_panningHandler = ({startDataX,endDataX}) => {
     let deltaDataX = endDataX-startDataX;
     let {changeHandler} = this.props;
-    changeHandler({panningDataX:deltaDataX});
+    changeHandler({panningX:deltaDataX});
   }
   
-  pannedHandler = ({startDataX,endDataX}) => {
+  plot_pannedHandler = ({startDataX,endDataX}) => {
     let deltaDataX = endDataX-startDataX;
     let {changeHandler} = this.props;
     changeHandler({minX:this.props.minX-deltaDataX,
                    maxX:this.props.maxX-deltaDataX,
-                   panningDataX:0
+                   panningX:0
                    });
+  }
+  
+  dataPoint_selectHandler = ({selection}) => {
+    let {changeHandler} = this.props;
+    changeHandler({dataPoint_hoverSelection:selection});
+  }
+  
+  lastMajorProcedure_selectHandler = ({selection}) => {
+    let {changeHandler} = this.props;
+    changeHandler({procedurePlot_Selection:selection});
+  }
+  
+  procedurePlotClickSelectionAddon_selectHandler =({selection}) => {
+    let {changeHandler} = this.props;
+    changeHandler({procedurePlot_Selection:selection});
   }
   
   onPlotXRangeSelection_DraggingLeftHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_LeftDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggingMainHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_LeftDeltaDataX: deltaDataX,
-                    onPlotXRangeSelection_RightDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX,
+                    onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggingRightHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_RightDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggedLeftHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_StartDataX: this.props.onPlotXRangeSelection_StartDataX+deltaDataX,
-                    onPlotXRangeSelection_LeftDeltaDataX: 0
+    changeHandler({ onPlotXRangeSelection_StartX: this.props.onPlotXRangeSelection_StartX+deltaDataX,
+                    onPlotXRangeSelection_LeftDeltaX: 0
                     });
   }
   
   onPlotXRangeSelection_DraggedMainHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_StartDataX: this.props.onPlotXRangeSelection_StartDataX+deltaDataX,
-                    onPlotXRangeSelection_EndDataX: this.props.onPlotXRangeSelection_EndDataX+deltaDataX,
-                    onPlotXRangeSelection_LeftDeltaDataX: 0,
-                    onPlotXRangeSelection_RightDeltaDataX: 0
+    changeHandler({ onPlotXRangeSelection_StartX: this.props.onPlotXRangeSelection_StartX+deltaDataX,
+                    onPlotXRangeSelection_EndX: this.props.onPlotXRangeSelection_EndX+deltaDataX,
+                    onPlotXRangeSelection_LeftDeltaX: 0,
+                    onPlotXRangeSelection_RightDeltaX: 0
                     });
   }
   
   onPlotXRangeSelection_DraggedRightHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_EndDataX: this.props.onPlotXRangeSelection_EndDataX+deltaDataX,
-                    onPlotXRangeSelection_RightDeltaDataX: 0
+    changeHandler({ onPlotXRangeSelection_EndX: this.props.onPlotXRangeSelection_EndX+deltaDataX,
+                    onPlotXRangeSelection_RightDeltaX: 0
                     });
   }
 }
@@ -232,18 +290,28 @@ const mapStateToProps = function (state,ownProps) {
     maxX: state.plot.maxX,
     minY: state.plot.minY,
     maxY: state.plot.maxY,
-    selectorMinX: state.plot.selectorMinX || 1000,
-    selectorMaxX: state.plot.selectorMaxX || 2000,
-    text: state.plot.text,
-    hoverX: state.plot.hoverX,
-    hoverSelection: state.plot.hoverSelection,
-    inPlotXRangeSelectionStartDataX: state.plot.inPlotXRangeSelectionStartDataX || null,
-    inPlotXRangeSelectionEndDataX: state.plot.inPlotXRangeSelectionEndDataX || null,
-    onPlotXRangeSelection_StartDataX: state.plot.onPlotXRangeSelection_StartDataX || null,
-    onPlotXRangeSelection_EndDataX: state.plot.onPlotXRangeSelection_EndDataX || null,
-    onPlotXRangeSelection_LeftDeltaDataX: state.plot.onPlotXRangeSelection_LeftDeltaDataX || 0,
-    onPlotXRangeSelection_RightDeltaDataX: state.plot.onPlotXRangeSelection_RightDeltaDataX || 0,
-    panningDataX: state.plot.panningDataX || 0,
+    panningX: state.plot.panningX || 0,
+    hoverX: state.plot.hoverX || null,
+    hoverY: state.plot.hoverY || null,
+    hoverDomX: state.plot.hoverDomX || null,
+    hoverDomY: state.plot.hoverDomX || null,
+    clickX: state.plot.clickX || null,
+    clickY: state.plot.clickY || null,
+    clickDomX: state.plot.clickDomX || null,
+    clickDomY: state.plot.clickDomX || null,
+    doubleClickX: state.plot.doubleClickX || null,
+    doubleClickY: state.plot.doubleClickY || null,
+    doubleClickDomX: state.plot.doubleClickDomX || null,
+    doubleClickDomY: state.plot.doubleClickDomY || null,
+    verticalCrosshair_X: state.plot.verticalCrosshair_X || null,
+    dataPoint_hoverSelection: state.plot.dataPoint_hoverSelection || null,
+    inPlotXRangeSelection_StartX: state.plot.inPlotXRangeSelection_StartX || null,
+    inPlotXRangeSelection_EndX: state.plot.inPlotXRangeSelection_EndX || null,
+    onPlotXRangeSelection_StartX: state.plot.onPlotXRangeSelection_StartX || 0,
+    onPlotXRangeSelection_EndX: state.plot.onPlotXRangeSelection_EndX || 2000,
+    onPlotXRangeSelection_LeftDeltaX: state.plot.onPlotXRangeSelection_LeftDeltaX || 0,
+    onPlotXRangeSelection_RightDeltaX: state.plot.onPlotXRangeSelection_RightDeltaX || 0,
+    procedurePlotClickSelectionAddon_clickSelection: state.plot.onPlotXRangeSelection_RightDeltaX || null,
     ...ownProps
   };
 };

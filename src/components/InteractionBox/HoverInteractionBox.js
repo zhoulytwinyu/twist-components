@@ -22,7 +22,7 @@ class HoverInteractionBox extends PureComponent {
   
   handleMouseMove = (ev) => {
     let {hoveringHandler} = this.props;
-    if (!hoveringHandler){
+    if (!hoveringHandler || ev.buttons!==0){
       return;
     }
     let bounds = this.ref.current.getBoundingClientRect();
