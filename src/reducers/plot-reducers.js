@@ -2,9 +2,10 @@ import { CHANGE_TOP_LEVEL_PLOT } from "../actions/plot-actions";
 
 let initialState = {
   minX:0,
-  maxX:1,
+  maxX:18000,
   minY:0,
-  maxY:400
+  maxY:400,
+  VerticalCrosshair_X:null,
 }
 
 export function plot(state=initialState,action) {
@@ -13,4 +14,3 @@ export function plot(state=initialState,action) {
   }
   return state;
 }
-

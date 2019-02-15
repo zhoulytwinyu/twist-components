@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import {toDomXCoord_Linear,
         toDomYCoord_Linear} from "plot-utils";
-        
+
 class SelectionPoint extends PureComponent {
   constructor(props){
     super(props);

@@ -11,7 +11,7 @@ import MedicationRecordModifier from "../components/MedicationRecordModifier";
 import YCategoricalPanel from "../components/YCategoricalPanel";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
 import HoverInteractionBoxWithReference from "../components/InteractionBox/HoverInteractionBoxWithReference";
-import TriPhaseXInteractionBoxWithReference from "../components/InteractionBox/TriPhaseXInteractionBoxWithReference";
+import TriPhaseInteractionBoxWithReference from "../components/InteractionBox/TriPhaseInteractionBoxWithReference";
 import {medication,
         medCategory,
         useMeds,
@@ -66,7 +66,7 @@ class MedicationRecordBundle extends Component {
                                             minY={1} maxY={0} height={height}
                                             hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
                                             >
-          <TriPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+          <TriPhaseInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
                                                 minX={minX} maxX={maxX} width={width}
                                                 minY={1} maxY={0} height={height}
                                                 updateHeightHandler={this.setState}
@@ -77,7 +77,7 @@ class MedicationRecordBundle extends Component {
                                                 selectingHandler={console.log} selectedHandler={console.log}
                                                 panningHandler={console.log} pannedHandler={console.log}
                                                 >
-          </TriPhaseXInteractionBoxWithReference>
+          </TriPhaseInteractionBoxWithReference>
         </HoverInteractionBoxWithReference>
       </div>
     );

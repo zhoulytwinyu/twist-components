@@ -5,55 +5,86 @@ import DragInteractionBox from "../components/InteractionBox/DragInteractionBox"
 
 
 class OnPlotXRangeSelection extends PureComponent {
-  constructor(props) {
-    super(props);
-  }
-  
   render() {
     let { minX,maxX,width,
           startX,endX,
-          height,style,
+          height,leftHandle,rightHandle,topHandle,
           ...rest} = this.props;
     let {SIDE_HANDLE_WIDTH,TOP_HANDLE_HEIGHT} = this;
-    let mainBoxLeft = this.toDomXCoord(startX);
-    let leftHandleLeft = mainBoxLeft-SIDE_HANDLE_WIDTH;
+    
+    // calculate positions
+    let mainHandleLeft = this.toDomXCoord(startX);
+    let leftHandleLeft = mainHandleLeft-SIDE_HANDLE_WIDTH;
     let topHandleLeft = leftHandleLeft;
     let rightHandleLeft = this.toDomXCoord(endX);
-    let mainBoxWidth = rightHandleLeft-mainBoxLeft;
-    let topHandleWidth = mainBoxWidth+2*SIDE_HANDLE_WIDTH;
-    
-    style = {width,height,overflow:"hidden",position:"relative",...style};
+    let mainHandleWidth = rightHandleLeft-mainHandleLeft;
+    let topHandleWidth = mainHandleWidth+2*SIDE_HANDLE_WIDTH;
+    // create elements
+    let LeftHandle = null;
+    let TopHandle = null;
+    let RightHandle = null;
+    let MainHandle = null;
+    if (leftHandle && topHandle) {
+      LeftHandle = <DragInteractionBox  style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:leftHandleLeft,
+                                        width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
+                                        cursor:"w-resize"
+                                        }}
+                                        draggingHandler={this.handleDraggingLeft} draggedHandler={this.handleDraggedLeft}
+                                        />;
+    }
+    else if (leftHandle && !topHandle) {
+      LeftHandle = <DragInteractionBox  style={{position:"absolute", top:0, left:leftHandleLeft,
+                                        width:SIDE_HANDLE_WIDTH, height:height, backgroundColor:"rgba(150,150,150,0.8)",
+                                        cursor:"w-resize"
+                                        }}
+                                        draggingHandler={this.handleDraggingLeft} draggedHandler={this.handleDraggedLeft}
+                                        />;
+    }
+    if (rightHandle && topHandle) {
+      RightHandle = <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:rightHandleLeft,
+                                        width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
+                                        cursor:"e-resize"
+                                        }}
+                                        draggingHandler={this.handleDraggingRight} draggedHandler={this.handleDraggedRight}
+                                        />
+    }
+    else if (rightHandle && !topHandle) {
+      RightHandle = <DragInteractionBox style={{position:"absolute", top:0, left:rightHandleLeft,
+                                        width:SIDE_HANDLE_WIDTH, height:height, backgroundColor:"rgba(150,150,150,0.8)",
+                                        cursor:"e-resize"
+                                        }}
+                                        draggingHandler={this.handleDraggingRight} draggedHandler={this.handleDraggedRight}
+                                        />
+    }
+    if (topHandle) {
+      TopHandle = <DragInteractionBox style={{position:"absolute", top:0, left:topHandleLeft,
+                                      width:topHandleWidth, height:TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
+                                      cursor:"grab"
+                                      }}
+                                      draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
+                                      />;
+      MainHandle = <DragInteractionBox  style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:mainHandleLeft,
+                                        width:mainHandleWidth, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
+                                        cursor:"grab"
+                                        }}
+                                        draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
+                                        />;
+    }
+    else if (!topHandle) {
+      MainHandle = <DragInteractionBox  style={{position:"absolute", top:0, left:mainHandleLeft,
+                                        width:mainHandleWidth, height:height, backgroundColor:"rgba(160,150,150,0.2)",
+                                        cursor:"grab"
+                                        }}
+                                        draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
+                                        />;
+    }
     
     return (
-      <div style={style}>
-        {/* left handle */}
-        <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:leftHandleLeft,
-                                    width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
-                                    cursor:"w-resize"
-                                    }}
-                            draggingHandler={this.handleDraggingLeft} draggedHandler={this.handleDraggedLeft}
-                            />
-        {/* right handle */}
-        <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:rightHandleLeft,
-                                    width:SIDE_HANDLE_WIDTH, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(150,150,150,0.8)",
-                                    cursor:"e-resize"
-                                    }}
-                            draggingHandler={this.handleDraggingRight} draggedHandler={this.handleDraggedRight}
-                            />
-        {/* top handle */}
-        <DragInteractionBox style={{position:"absolute", top:0, left:topHandleLeft,
-                                    width:topHandleWidth, height:TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
-                                    cursor:"grab"
-                                    }}
-                            draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
-                            />
-        {/* main box */}
-        <DragInteractionBox style={{position:"absolute", top:TOP_HANDLE_HEIGHT, left:mainBoxLeft,
-                                    width:mainBoxWidth, height:height-TOP_HANDLE_HEIGHT, backgroundColor:"rgba(160,150,150,0.2)",
-                                    cursor:"grab"
-                                    }}
-                            draggingHandler={this.handleDraggingMain} draggedHandler={this.handleDraggedMain}
-                            />
+      <div {...rest} style={{overflow:"hidden"}}>
+        {LeftHandle}
+        {RightHandle}
+        {TopHandle}
+        {MainHandle}
       </div>
     );
   }

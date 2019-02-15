@@ -4,16 +4,24 @@ import {bisect_left,
         bisect_right} from "bisect";
 
 class HoverSelectionAddon extends PureComponent {
+  constructor(props){
+    super(props);
+    this.lastHoverTimeStamp = null;
+  }
+  
   render() {
     return null;
   }
   
-  componentDidMount(){
-    this.select();
-  }
-  
   componentDidUpdate(){
-    this.select();
+    let {hoverTimeStamp} = this.props;
+    if (this.lastHoverTimeStamp === hoverTimeStamp) {
+      return;
+    }
+    else {
+      this.lastHoverTimeStamp=hoverTimeStamp
+      this.select();
+    }
   }
   
   select() {

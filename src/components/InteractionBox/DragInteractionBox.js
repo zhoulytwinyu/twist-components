@@ -16,16 +16,29 @@ class DragInteractionBox extends PureComponent {
     return (
       <div {...rest} onMouseDown={this.handleMouseDown}>
         {children}
-        <div  className="DragInteractionBox-grabbingOverlay"
-              style={{display: dragging ? "initial" : "none"}}>
+        <div  className={this.determineOverlayClass(dragging)}>
         </div>
       </div>
     );
+  }
+  
+  componentDidMount() {
+    document.addEventListener("mousemove",this.handleDocumentMouseMove);
+    document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
 
   componentWillUnmount(){
     document.removeEventListener("mousemove",this.handleDocumentMouseMove);
     document.removeEventListener("mouseup",this.handleDocumentMouseUp);
+  }
+  
+  determineOverlayClass(dragging){
+    if (dragging) {
+      return "DragInteractionBox-draggingOverlay"
+    }
+    else {
+      return "DragInteractionBox-notDraggingOverlay";
+    }
   }
   
   handleMouseDown = (ev)=>{
@@ -34,13 +47,13 @@ class DragInteractionBox extends PureComponent {
     this.mouseDownEventClientX = ev.clientX;
     this.mouseDownEventClientY = ev.clientY;
     this.setState({dragging:true});
-    document.addEventListener("mousemove",this.handleDocumentMouseMove);
-    document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
   
   handleDocumentMouseUp = (ev)=>{
-    document.removeEventListener("mousemove",this.handleDocumentMouseMove);
-    document.removeEventListener("mouseup",this.handleDocumentMouseUp);
+    let {dragging} = this.state;
+    if (dragging===false) {
+      return;
+    }
     this.setState({dragging:false});
     let {draggedHandler} = this.props;
     if (!draggedHandler) {
@@ -52,6 +65,10 @@ class DragInteractionBox extends PureComponent {
   }
   
   handleDocumentMouseMove = (ev)=>{
+    let {dragging} = this.state;
+    if (dragging===false) {
+      return;
+    }
     let {draggingHandler} = this.props;
     if (!draggingHandler) {
       return;

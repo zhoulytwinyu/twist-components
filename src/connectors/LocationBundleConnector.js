@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 import {changeTopLevelPlot} from "../actions/plot-actions";
 // Import components
@@ -15,34 +15,32 @@ import VerticalCrosshair from "../components/VerticalCrosshair";
 import SelectionPoint from "../components/SelectionPoint";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
 import HoverInteractionBoxWithReference from "../components/InteractionBox/HoverInteractionBoxWithReference";
-import TriPhaseXInteractionBoxWithReference from "../components/InteractionBox/TriPhaseXInteractionBoxWithReference";
+import TriPhaseInteractionBoxWithReference from "../components/InteractionBox/TriPhaseInteractionBoxWithReference";
 
 import location from "./test-data/location";
-import procedures from "./test-data/procedures";
-import {plot1x,plot1ys} from "./test-data/plot1";
 
-let selectionData = [];
-for (let i=0; i<plot1x.length; i++) {
-  selectionData.push({x:plot1x[i],ys:[plot1ys[0][i],plot1ys[1][i]] });
-}
-
-class LocationBundle extends Component {
+class LocationBundle extends PureComponent {
   render() {
     let { minX,maxX,
           minY,maxY,
-          hoverX,hoverY,
+          panningX,
+          hoverX, hoverY,
+          hoverDomX, hoverDomY,
+          clickX, clickY,
+          clickDomX, clickDomY,
           verticalCrosshair_X,
-          hoverSelection,
-          height,width,
-          inPlotXRangeSelectionStartDataX,inPlotXRangeSelectionEndDataX,
-          onPlotXRangeSelection_StartDataX,onPlotXRangeSelection_EndDataX,
-          onPlotXRangeSelection_LeftDeltaDataX,onPlotXRangeSelection_RightDeltaDataX,
-          panningDataX
+          inPlotXRangeSelection_StartX,inPlotXRangeSelection_EndX,
+          onPlotXRangeSelection_StartX,onPlotXRangeSelection_EndX,
+          onPlotXRangeSelection_LeftDeltaX,onPlotXRangeSelection_RightDeltaX,
+          procedurePlotClickSelectionAddon_clickSelection
           } = this.props;
     let { changeHandler } = this.props;
     let {LEFT,RIGHT,TOP,BOTTOM} = this;
-    minX = minX-panningDataX;
-    maxX = maxX-panningDataX;
+    minX = minX-panningX;
+    maxX = maxX-panningX;
+    let width=1000;
+    let left
+    
     return (
       <div style={{position:"relative", width:LEFT+RIGHT+width, height:TOP+BOTTOM+height}}>
         {/*Y Axis*/}
@@ -58,43 +56,46 @@ class LocationBundle extends Component {
                               width={LEFT} height={height} rowHeight={height}
                               />
         </div>
+        
+        {/* Location plot area*/}
         <div style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP,backgroundColor:"#fff5e9"}}>
-            <VerticalGrid style={{position:"absolute",width:width,height:height}}
-                          grid={[{x:2000},{x:8000},{x:16000}]}
-                          minX={minX} maxX={maxX} width={width}
-                          />
-            <LocationPlot style={{position:"absolute",height:height/2,width:width,top:height/4}}
-                          minX={minX} maxX={maxX} width={width}
-                          data={location}/>
-            <LocationPlotHoverLabel style={{position:"absolute",height:height/2,width:width,top:height/4}}
-                          minX={minX} maxX={maxX} width={width}
-                          data={location} hoverDataX={hoverX}/>
-            <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
-                               hoverX={verticalCrosshair_X}
-                               minX={minX} maxX={maxX} width={width}
-                               />
-            <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
-                                    startDataX={inPlotXRangeSelectionStartDataX} endDataX={inPlotXRangeSelectionEndDataX}
-                                    minX={minX} maxX={maxX} width={width}/>
+          <VerticalGrid style={{position:"absolute",width:width,height:height}}
+                        grid={[{x:2000},{x:8000},{x:16000}]}
+                        minX={minX} maxX={maxX} width={width}
+                        />
+          <LocationPlot style={{position:"absolute",height:height/2,width:width,top:height/4}}
+                        minX={minX} maxX={maxX} width={width}
+                        data={location}
+                        />
+          <LocationPlotHoverLabel style={{position:"absolute",height:height/2,width:width,top:height/4}}
+                                  minX={minX} maxX={maxX} width={width}
+                                  data={location} hoverX={hoverX}/>
+          <VerticalCrosshair style={{position:"absolute",width:width,height:height}}
+                             hoverX={verticalCrosshair_X}
+                             minX={minX} maxX={maxX} width={width}
+                             />
+          <InPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
+                                  startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
+                                  minX={minX} maxX={maxX} width={width}/>
         </div>
-        {/*Plot Area*/}
+
         <HoverInteractionBoxWithReference style={{position:"absolute",width:width,height:height,left:LEFT,top:TOP}}
                                                   minX={minX} maxX={maxX} width={width}
                                                   minY={1} maxY={0} height={height}
-                                                  hoveringHandler={this.hoveringHandler} mouseOutHandler={this.mouseOutHandler}
+                                                  hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
                                                   >
-          <TriPhaseXInteractionBoxWithReference style={{position:"absolute",width:width,height:height}}
+          <TriPhaseInteractionBoxWithReference  style={{position:"absolute",width:width,height:height}}
                                                 minX={minX} maxX={maxX} width={width}
                                                 minY={1} maxY={0} height={height}
-                                                clickedHandler={console.log}
                                                 doubleClickHandler={console.log}
-                                                selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
-                                                panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
+                                                selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
+                                                panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
                                                 >
             <OnPlotXRangeSelection  style={{position:"absolute",width:width,height:height}}
                                     minX={minX} maxX={maxX} height={height} width={width}
-                                    startX={onPlotXRangeSelection_StartDataX+onPlotXRangeSelection_LeftDeltaDataX}
-                                    endX={onPlotXRangeSelection_EndDataX+onPlotXRangeSelection_RightDeltaDataX}
+                                    startX={onPlotXRangeSelection_StartX+onPlotXRangeSelection_LeftDeltaX}
+                                    endX={onPlotXRangeSelection_EndX+onPlotXRangeSelection_RightDeltaX}
+                                    leftHandle={true} rightHandle={true} topHandle={true}
                                     draggingLeftHandler={this.onPlotXRangeSelection_DraggingLeftHandler}
                                     draggingMainHandler={this.onPlotXRangeSelection_DraggingMainHandler}
                                     draggingRightHandler={this.onPlotXRangeSelection_DraggingRightHandler}
@@ -102,26 +103,29 @@ class LocationBundle extends Component {
                                     draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
                                     draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
                                     />
-          </TriPhaseXInteractionBoxWithReference>
+          </TriPhaseInteractionBoxWithReference>
         </HoverInteractionBoxWithReference>
       </div>
     );
   }
   
-  hoveringHandler = ({dataX,dataY,domX,domY}) => {
+  plot_hoveringHandler = ({dataX,dataY,domX,domY}) => {
     let {changeHandler} = this.props;
     changeHandler({ hoverX: dataX,
                     hoverDomX: domX,
-                    verticalCrosshair_X: dataX,
                     hoverY: null,
-                    hoverDomY: null
+                    hoverDomY: null,
+                    verticalCrosshair_X: dataX,
                     });
   }
   
-  mouseOutHandler = ({dataX,dataY}) => {
+  plot_mouseOutHandler = () => {
     let {changeHandler} = this.props;
     changeHandler({ hoverX:null,
-                    hoverY:null
+                    hoverDomX:null, 
+                    hoverDomY:null,
+                    hoverY:null,
+                    verticalCrosshair_X: null,
                     });
   }
   
@@ -130,58 +134,58 @@ class LocationBundle extends Component {
     changeHandler({hoverSelection:selection});
   }
   
-  selectingHandler = ({startDataX,endDataX}) => {
+  plot_selectingHandler = ({startDataX,endDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({inPlotXRangeSelectionStartDataX:startDataX,
-                   inPlotXRangeSelectionEndDataX:endDataX});
+    changeHandler({inPlotXRangeSelection_StartX:startDataX,
+                   inPlotXRangeSelection_EndX:endDataX});
   }
   
-  selectedHandler = ({startDataX,endDataX}) => {
+  plot_selectedHandler = ({startDataX,endDataX}) => {
     let {changeHandler} = this.props;
     changeHandler({minX:Math.min(startDataX,endDataX),
                    maxX:Math.max(startDataX,endDataX),
-                   inPlotXRangeSelectionStartDataX:null,
-                   inPlotXRangeSelectionEndDataX:null});
+                   inPlotXRangeSelection_StartX:null,
+                   inPlotXRangeSelection_EndDX:null});
   }
   
-  panningHandler = ({startDataX,endDataX}) => {
+  plot_panningHandler = ({startDataX,endDataX}) => {
     let deltaDataX = endDataX-startDataX;
     let {changeHandler} = this.props;
-    changeHandler({panningDataX:deltaDataX});
+    changeHandler({panningX:deltaDataX});
   }
   
-  pannedHandler = ({startDataX,endDataX}) => {
+  plot_pannedHandler = ({startDataX,endDataX}) => {
     let deltaDataX = endDataX-startDataX;
     let {changeHandler} = this.props;
     changeHandler({minX:this.props.minX-deltaDataX,
                    maxX:this.props.maxX-deltaDataX,
-                   panningDataX:0
+                   panningX:0
                    });
   }
   
   onPlotXRangeSelection_DraggingLeftHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_LeftDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggingMainHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_LeftDeltaDataX: deltaDataX,
-                    onPlotXRangeSelection_RightDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX,
+                    onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggingRightHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
-    changeHandler({ onPlotXRangeSelection_RightDeltaDataX: deltaDataX
+    changeHandler({ onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
   onPlotXRangeSelection_DraggedLeftHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_StartDataX: this.props.onPlotXRangeSelection_StartDataX+deltaDataX,
-                    onPlotXRangeSelection_LeftDeltaDataX: 0
+                    onPlotXRangeSelection_LeftDeltaX: 0
                     });
   }
   
@@ -189,23 +193,18 @@ class LocationBundle extends Component {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_StartDataX: this.props.onPlotXRangeSelection_StartDataX+deltaDataX,
                     onPlotXRangeSelection_EndDataX: this.props.onPlotXRangeSelection_EndDataX+deltaDataX,
-                    onPlotXRangeSelection_LeftDeltaDataX: 0,
-                    onPlotXRangeSelection_RightDeltaDataX: 0
+                    onPlotXRangeSelection_LeftDeltaX: 0,
+                    onPlotXRangeSelection_RightDeltaX: 0
                     });
   }
   
   onPlotXRangeSelection_DraggedRightHandler = ({deltaDataX}) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_EndDataX: this.props.onPlotXRangeSelection_EndDataX+deltaDataX,
-                    onPlotXRangeSelection_RightDeltaDataX: 0
+                    onPlotXRangeSelection_RightDeltaX: 0
                     });
   }
 }
-
-LocationBundle.prototype.LEFT=150;
-LocationBundle.prototype.RIGHT=0;
-LocationBundle.prototype.TOP=0;
-LocationBundle.prototype.BOTTOM=0;
 
 const mapStateToProps = function (state,ownProps) {
   return {

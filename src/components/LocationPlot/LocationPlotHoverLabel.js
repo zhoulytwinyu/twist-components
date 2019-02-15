@@ -9,14 +9,14 @@ class LocationPlotHoverLabel extends PureComponent {
   render() {
     let { data, /* [{name,start,end},...] sorted asc */
           minX,maxX,width,
-          hoverDataX,
+          hoverX,
           ...rest} = this.props;
-    if (hoverDataX === null || hoverDataX === undefined) {
+    if (hoverX === null || hoverX === undefined) {
       return null;
     }
-    let {starts,ends} = this.extractStartsEnds(data);
-    let selectionLeftIndex = bisect_left(starts,hoverDataX);
-    let selectionRightIndex = bisect_right(ends,hoverDataX);
+    let {starts,ends} = this.extractStartsAndEnds(data);
+    let selectionLeftIndex = bisect_left(starts,hoverX);
+    let selectionRightIndex = bisect_right(ends,hoverX);
     if (selectionLeftIndex > selectionRightIndex ||
         selectionLeftIndex===-1 ||
         selectionRightIndex===data.length ) {
@@ -33,7 +33,7 @@ class LocationPlotHoverLabel extends PureComponent {
     );
   }
 
-  extractStartsEnds = memoize_one( (data) => {
+  extractStartsAndEnds = memoize_one( (data) => {
     let starts = data.map( ({start}) => start);
     let ends = data.map( ({end}) => end);
     return {starts,ends};

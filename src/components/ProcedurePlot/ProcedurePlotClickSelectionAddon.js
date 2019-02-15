@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
 import {toDomXCoord_Linear,
         applyCanvasStyle} from "plot-utils";
-        
+import {LABEL_DOMY,LABEL_DOMX_OFFSET,PROCEDURE_STYLE_LUT} from "./ProcedurePlotConstants";
+
 class ProcedurePlotClickSelectionAddon extends PureComponent {
   constructor(props) {
     super(props);
@@ -32,13 +33,13 @@ class ProcedurePlotClickSelectionAddon extends PureComponent {
          clickDomX === undefined ||
          clickDomY === null ||
          clickDomY === undefined) {
-      this.updateSelection({selection:null});
+      this.updateSelection(null);
       return;
     }
     let {LABEL_DOMY} = this;
     // Filling in textStyle, etc
     let preprocessedData = this.fillIndex(data);
-    preprocessedData = this.fillProcedureInfo(preprocessedData,this.INFO_LUT);
+    preprocessedData = this.fillProcedureInfo(preprocessedData,PROCEDURE_STYLE_LUT);
     preprocessedData = this.filterByRange(preprocessedData,minX,maxX);
     preprocessedData = this.convertToDomXCoord(preprocessedData,minX,maxX,width);
     let pickingCanvases = this.createPickingCanvases(minX,maxX,width,height,preprocessedData);
@@ -97,18 +98,14 @@ class ProcedurePlotClickSelectionAddon extends PureComponent {
     let {domX, name, acronym, textStyle} = record;
     let ctx = canvas.getContext("2d");
     ctx.textAlign = "right";
-    domX = domX+this.LABEL_DOMX_OFFSET;
+    domX = domX+LABEL_DOMX_OFFSET;
     applyCanvasStyle(ctx,textStyle);
-    ctx.translate(domX,this.LABEL_DOMY);
+    ctx.translate(domX,LABEL_DOMY);
     ctx.rotate(-Math.PI/2);
     let textMetrics = ctx.measureText(name);
-    ctx.fillRect(0,
-                 -10,
-                 -textMetrics.width,
-                 20
-                 );
+    ctx.fillRect(0,-10,-textMetrics.width,20);
     ctx.rotate(Math.PI/2);
-    ctx.translate(-domX,-this.LABEL_DOMY);
+    ctx.translate(-domX,-LABEL_DOMY);
   }
   
   updateSelection(selection){
@@ -117,13 +114,9 @@ class ProcedurePlotClickSelectionAddon extends PureComponent {
     }
     if (this.memo.selection !== selection) {
       let {selectHandler} = this.props;
-      selectHandler({selection});
+      selectHandler(selection);
     }
   }
 }
-
-ProcedurePlotClickSelectionAddon.prototype.INFO_LUT = {};
-ProcedurePlotClickSelectionAddon.prototype.LABEL_DOMY = 5;
-ProcedurePlotClickSelectionAddon.prototype.LABEL_DOMX_OFFSET = -5;
 
 export default ProcedurePlotClickSelectionAddon;

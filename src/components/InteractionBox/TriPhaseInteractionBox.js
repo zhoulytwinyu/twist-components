@@ -21,22 +21,18 @@ class TriPhaseInteractionBox extends PureComponent {
           panningHandler,pannedHandler,
           ...rest} = this.props;
     let {mode} = this.state;
-    let overlayClass = "TriPhaseInteractionBox-clickingOverlay";
-    if (mode === "selecting" || mode === "auto-selecting") {
-      overlayClass = "TriPhaseInteractionBox-selectingOverlay";
-    }
-    if (mode === "panning") {
-      overlayClass = "TriPhaseInteractionBox-panningOverlay";
-    }
     return (
       <div ref={this.ref} onMouseDown={this.handleMouseDown}
                           {...rest}>
         {children}
-        <div  className={overlayClass}
-              style={{display: mode==="hovering" ? "none" : "initial"}}>
-        </div>
+        <div  className={this.determineOverlayClass(mode)}></div>
       </div>
     );
+  }
+  
+  componentDidMount() {
+    document.addEventListener("mousemove",this.handleDocumentMouseMove);
+    document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
 
   componentWillUnmount() {
@@ -45,45 +41,73 @@ class TriPhaseInteractionBox extends PureComponent {
     document.removeEventListener("mouseup",this.handleDocumentMouseUp);
   }
   
+  determineOverlayClass(mode) {
+    switch (mode){
+      case "hovering":
+      case "clicking":
+      case "double-clicking":
+        return "TriPhaseInteractionBox-hiddenOverlay";
+      case "selecting":
+      case "auto-selecting":
+        return "TriPhaseInteractionBox-selectingOverlay";
+      case "panning":
+        return "TriPhaseInteractionBox-panningOverlay";
+      default:
+        return null;
+    }
+  }
+  
   handleMouseDown = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    if (this.lastClick!==null && ev.timeStamp-this.lastClick<1000 &&
+    // detect double click 
+    if (this.lastClick!==null && ev.timeStamp-this.lastClick<500 &&
         Math.abs(ev.clientX-this.mouseDownClientX)<10 && Math.abs(ev.clientY-this.mouseDownClientY)<10) {
+      this.setModeCascade("double-clicking");
       this.lastClick=null;
-      let {doubleClickHandler} = this.props;
-      if (!doubleClickHandler) {
-        return;
-      }
-      doubleClickHandler({domX:this.mouseDownClientX,
-                          domY:this.mouseDownClientY});
+      this.mouseDownClientX = ev.clientX;
+      this.mouseDownClientY = ev.clientY;
+      this.referenceClientX = this.ref.current.getBoundingClientRect().left;
+      this.referenceClientY = this.ref.current.getBoundingClientRect().top;
       return;
     }
-    this.lastClick = ev.timeStamp;
-    this.mouseDownClientX = ev.clientX;
-    this.mouseDownClientY = ev.clientY;
-    this.referenceClientX = this.ref.current.getBoundingClientRect().left;
-    this.referenceClientY = this.ref.current.getBoundingClientRect().top;
-    this.setModeCascade();
-    document.addEventListener("mousemove",this.handleDocumentMouseMove);
-    document.addEventListener("mouseup",this.handleDocumentMouseUp);
+    else {
+      this.setModeCascade("clicking");
+      this.lastClick = ev.timeStamp;
+      this.mouseDownClientX = ev.clientX;
+      this.mouseDownClientY = ev.clientY;
+      this.referenceClientX = this.ref.current.getBoundingClientRect().left;
+      this.referenceClientY = this.ref.current.getBoundingClientRect().top;
+    }
   }
   
   handleDocumentMouseUp = (ev) => {
-    document.removeEventListener("mousemove",this.handleDocumentMouseMove);
-    document.removeEventListener("mouseup",this.handleDocumentMouseUp);
-    this.clearModeCascade();
     let {mode} = this.state;
+    if (mode==="hovering") {
+      return;
+    }
+    this.clearModeCascade();
+    this.setHovering();
+    // Trigger respective event on mouseup
     let startDomX = this.mouseDownClientX-this.referenceClientX;
     let startDomY = this.mouseDownClientY-this.referenceClientY;
     let endDomX = ev.clientX-this.referenceClientX;
+    let endDomY = ev.clientY-this.referenceClientY;
+    let timestamp = ev.timeStamp;
     switch (mode) {
       case "clicking":
         let {clickedHandler} = this.props;
         if (!clickedHandler) {
           break;
         }
-        clickedHandler({domX:startDomX,domY:startDomY});
+        clickedHandler({domX:startDomX,domY:startDomY,timestamp});
+        break;
+      case "double-clicking":
+        let {doubleClickHandler} = this.props;
+        if (!doubleClickHandler) {
+          break;
+        }
+        doubleClickHandler({domX:startDomX,domY:startDomY,timestamp});
         break;
       case "auto-selecting":
         //pass
@@ -94,7 +118,9 @@ class TriPhaseInteractionBox extends PureComponent {
           break;
         }
         selectedHandler({ startDomX,
-                          endDomX
+                          endDomX,
+                          startDomY,
+                          endDomY
                           });
         break;
       case "panning":
@@ -102,19 +128,27 @@ class TriPhaseInteractionBox extends PureComponent {
         if (!pannedHandler) {
           break;
         }
-        pannedHandler({startDomX,endDomX});
+        pannedHandler({ startDomX,
+                        endDomX,
+                        startDomY,
+                        endDomY
+                        });
         break;
       default:
         throw new Error("ProgrammerTooStupidError");
     }
-    this.setHovering();
   }
   
   handleDocumentMouseMove = (ev) => {
     let {mode} = this.state;
     switch (mode){
+      case "hovering":
+        break;
       case "clicking":
         this.handleDocumentMouseMove_ClickingMode(ev);
+        break;
+      case "double-clicking":
+        this.handleDocumentMouseMove_DoubleClickingMode(ev);
         break;
       case "auto-selecting":
         this.handleDocumentMouseMove_AutoSelectingMode(ev);
@@ -141,6 +175,17 @@ class TriPhaseInteractionBox extends PureComponent {
     }
   }
   
+  handleDocumentMouseMove_DoubleClickingMode(ev) {
+    let startDomX = this.mouseDownClientX-this.referenceClientX;
+    let endDomX = ev.clientX-this.referenceClientX;
+    let moved = Math.abs(startDomX-endDomX);
+    if (moved>10 && this.timeout) {
+      this.setSelecting();
+      this.clearModeCascade();
+      this.handleDocumentMouseMove_SelectingMode(ev);
+    }
+  }
+  
   handleDocumentMouseMove_AutoSelectingMode(ev) {
     let startDomX = this.mouseDownClientX-this.referenceClientX;
     let endDomX = ev.clientX-this.referenceClientX;
@@ -155,29 +200,43 @@ class TriPhaseInteractionBox extends PureComponent {
   handleDocumentMouseMove_SelectingMode(ev) {
     let startDomX = this.mouseDownClientX-this.referenceClientX;
     let endDomX = ev.clientX-this.referenceClientX;
+    let startDomY = this.mouseDownClientY-this.referenceClientY;
+    let endDomY = ev.clientY-this.referenceClientY;
     let {selectingHandler} = this.props;
     if (!selectingHandler) {
       return;
     }
     selectingHandler({startDomX,
-                      endDomX
+                      endDomX,
+                      startDomY,
+                      endDomY
                       });
   }
   
   handleDocumentMouseMove_PanningMode = (ev) => {
     let startDomX = this.mouseDownClientX-this.referenceClientX;
     let endDomX = ev.clientX-this.referenceClientX;
+    let startDomY = this.mouseDownClientY-this.referenceClientY;
+    let endDomY = ev.clientY-this.referenceClientY;
     let {panningHandler} = this.props;
     if (!panningHandler) {
       return;
     }
-    panningHandler({startDomX,endDomX});
+    panningHandler({startDomX,
+                    endDomX,
+                    startDomY,
+                    endDomY
+                    });
   }
   
-  setModeCascade = (targetMode="clicking")=>{
+  setModeCascade = (targetMode)=>{
     switch (targetMode) {
       case "clicking":
         this.setClicking();
+        this.timeout = setTimeout(this.setModeCascade,200,"auto-selecting");
+        break;
+      case "double-clicking":
+        this.setDoubleClicking();
         this.timeout = setTimeout(this.setModeCascade,200,"auto-selecting");
         break;
       case "auto-selecting":
@@ -203,6 +262,10 @@ class TriPhaseInteractionBox extends PureComponent {
   
   setClicking() {
     this.setState({mode:"clicking"});
+  }
+  
+  setDoubleClicking() {
+    this.setState({mode:"double-clicking"});
   }
   
   setAutoSelecting() {

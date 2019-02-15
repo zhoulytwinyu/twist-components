@@ -28,7 +28,8 @@ class HoverInteractionBox extends PureComponent {
     let bounds = this.ref.current.getBoundingClientRect();
     let domX = ev.clientX - bounds.left;
     let domY = ev.clientY - bounds.top;
-    hoveringHandler({domX,domY});
+    let timestamp = ev.timeStamp;
+    hoveringHandler({domX,domY,timestamp});
   }
   
   handleMouseOut = (ev) => {
@@ -39,7 +40,8 @@ class HoverInteractionBox extends PureComponent {
     let bounds = this.ref.current.getBoundingClientRect();
     let domX = ev.clientX - bounds.left;
     let domY = ev.clientY - bounds.top;
-    mouseOutHandler({domX,domY});
+    let timestamp = ev.timeStamp;
+    mouseOutHandler({domX,domY,timestamp});
   }
 }
 

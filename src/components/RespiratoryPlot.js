@@ -1,23 +1,21 @@
 import React, { PureComponent } from "react";
-import {filterData,
+import {filterDataPoint_columnsIndexed,
+        filterDataRange_columnsIndexed,
         toDomXCoord_Linear,
         toDomYCoord_Linear,
-        hLinePlot,
-        vLinePlot,
         stepLinePlot,
-        scatterPlot,
-        generateAxisDateGrid} from "plot-utils";
+        shadeArea} from "plot-utils";
 
 class RespPlot extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
-    this.toDomXCoord = this.toDomXCoord.bind(this);
-    this.toDomYCoord = this.toDomYCoord.bind(this);
   }
 
   render() {
-    let { x,ys,
+    let { respiratoryScores, /*[{time,RespiratorySupportScore,ECMOScore}]*/
+          iNO, /*[{start,end}]*/
+          anethetics, /*[{start,end}]*/
           minX,maxX,width,
           minY,maxY,height,
           ...rest} = this.props;
@@ -35,25 +33,59 @@ class RespPlot extends PureComponent {
   }
   
   draw() {
-    let {x,ys} = this.props;
-    let {minX,maxX,minY,maxY,width,height} = this.props;
-    let canvas = this.ref.current;
+    let { respiratoryScores,
+          iNO,
+          anethetics,
+          minX,maxX,width,
+          minY,maxY,height
+          } = this.props;
+    // Organize data (cached)
+    let respiratoryScores_byColumn = this.columnIndex_respiratoryScores(respiratoryScores);
+    let iNO_byColumn = this.columnIndexed_iNO(iNO);
+    let anethetics_byColumn = this.columnIndex_anethetics(anethetics);
+    // Filter data
+    respiratoryScores_byColumn_filtered=filterDataPoint_columnsIndexed(respiratoryScores_byColumn,"time",minX,maxX);
+    iNO_byColumn_filtered = filterDataRange_columnsIndexed(iNO_byColumn,"start","end",minX,maxX);
+    anethetics_byColumn_filtered = filterDataRange_columnsIndexed(anethetics_byColumn,"start","end",minX,maxX);
+    // Coordinate transform
+    let time_domXs = respiratoryScores_byColumn_filtered["time"].map( (x)=>toDomXCoord_Linear(width,minX,maxX,x) );
+    let RespiratorySupportScore_domYs = respiratoryScores_byColumn_filtered["RespiratorySupportScore"].map( (y)=>toDomYCoord_Linear(height,minY,maxY,y) );
+    let ECMOScore_domYs = respiratoryScores_byColumn_filtered["ECMOScore"].map( (y)=>toDomYCoord_Linear(height,minY,maxY,y) );
+    let iNOStartDomX = iNO_byColumn_filtered["start"].map( (x)=>toDomXCoord_Linear(width,minX,maxX,x) );
+    let iNOEndDomX = iNO_byColumn_filtered["end"].map( (x)=>toDomXCoord_Linear(width,minX,maxX,x) );
+    let anetheticsStartDomX = anethetics_byColumn_filtered["start"].map( (x)=>toDomXCoord_Linear(width,minX,maxX,x) );
+    let anetheticsEndDomX = anethetics_byColumn_filtered["end"].map( (x)=>toDomXCoord_Linear(width,minX,maxX,x) );
     // Clear plots
+    let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
-    // Filter data
-    let {filteredX,filteredYs} = filterData(x,ys,minX,maxX);
-    // Coordinate transform
-    let domX = filteredX.map(this.toDomXCoord);
-    let domYs = filteredYs.map(series=>series.map(this.toDomYCoord));
-    // Draw Axis
-    vLinePlot(canvas,[this.toDomXCoord(0),this.toDomXCoord(minX)],0,canvas.height);
-    hLinePlot(canvas,[this.toDomYCoord(0),this.toDomYCoord(minY)],0,canvas.width);
     // Draw plot
-    stepLinePlot(canvas,domX,domYs[0]);
+    stepLinePlot(canvas,time_domXs,RespiratorySupportScore_domYs);
+    stepLinePlot(canvas,time_domXs,ECMOScore_domYs);
   }
   
-  toDomXCoord(dataX) {
+  // Data manip (cached)
+  columnIndex_respiratoryScores = memoize_one( (respiratoryScores)=> {
+    let times = respiratoryScores.map( ({time})=>time );
+    let RespiratorySupportScores = respiratoryScores.map( ({RespiratorySupportScore})=>RespiratorySupportScore );
+    let ECMOScores = respiratoryScores.map( ({ECMOScore})=>ECMOScore );
+    return {time,RespiratorySupportScore,ECMOScore}
+  });
+  
+  columnIndex_iNO = memoize_one( (iNO)=> {
+    let starts = iNO.map( ({start})=>start );
+    let ends = iNO.map( ({end})=>end );
+    return {start,end};
+  });
+    
+  columnIndex_anethetics = memoize_one( (anethetics)=> {
+    let starts = anethetics.map( ({start})=>start );
+    let ends = anethetics.map( ({end})=>end );
+    return {start,end};
+  });
+
+  // Coordinate conv
+  toDomXCoord(dataX){
     let {minX,maxX,width} = this.props;
     return toDomXCoord_Linear(width,minX,maxX,dataX);
   }

@@ -8,7 +8,7 @@ class InPlotXRangeSelection extends PureComponent {
   }
 
   render() {
-    let { startDataX,endDataX,
+    let { startX,endX,
           minX, maxX, width,...rest} = this.props;
     return (
       <canvas ref={this.ref} height={1} width={width} {...rest}></canvas>
@@ -24,19 +24,19 @@ class InPlotXRangeSelection extends PureComponent {
   }
   
   draw() {
-    let {startDataX,endDataX,width} = this.props;
+    let {startX,endX,width} = this.props;
     // Clear canvas
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
     // Don't draw if range data missing
-    if (startDataX === undefined || startDataX === null ||
-        endDataX === undefined || endDataX === null ) {
+    if (startX === undefined || startX === null ||
+        endX === undefined || endX === null ) {
       return;
     }
     // Don't draw if range = 0
-    let startDomX = Math.max(0,this.toDomXCoord(startDataX));
-    let endDomX = Math.min(width,this.toDomXCoord(endDataX));
+    let startDomX = Math.max(0,this.toDomXCoord(startX));
+    let endDomX = Math.min(width,this.toDomXCoord(endX));
     if (startDomX === endDomX) {
       return;
     }

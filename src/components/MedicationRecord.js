@@ -5,7 +5,9 @@ import {toDomXCoord_Linear,
         scatterPlot,
         labelPlot} from "plot-utils";
 
-class MedicationRecord extends PureComponent {
+const SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"}
+
+class MedicationRecordPlot extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
@@ -45,7 +47,7 @@ class MedicationRecord extends PureComponent {
     let domX = data.map( ({start,end})=>this.toDomXCoord((start+end)/2) );
     let domY = data.map( ({name})=>this.toDomYCoord(name,medPosLUT,"middle") );
     let dose = data.map( ({dose})=>dose);
-    scatterPlot(canvas,domX,domY,{shape:"dot",radius:rowHeight/2-2,fillStyle:"red"});
+    scatterPlot(canvas,domX,domY,{shape:"dot",radius:rowHeight/2,fillStyle:"lightgrey"});
     scatterPlot(canvas,domX,domY,{shape:"dot",radius:rowHeight/2-2,fillStyle:"red"});
     labelPlot(canvas,domX,domY,dose,"center","middle",0);
   }
@@ -69,6 +71,6 @@ class MedicationRecord extends PureComponent {
   }
 }
 
-MedicationRecord.prototype.SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"};
+MedicationRecordPlot.prototype.SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"};
 
-export default MedicationRecord;
+export default MedicationRecordPlot;

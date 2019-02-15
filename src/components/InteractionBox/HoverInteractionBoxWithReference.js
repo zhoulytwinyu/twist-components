@@ -24,24 +24,24 @@ class HoverInteractionBoxWithReference extends PureComponent {
     );
   }
   
-  hoveringHandler = ({domX,domY}) => {
+  hoveringHandler = ({domX,domY,timestamp}) => {
     let {hoveringHandler} = this.props;
     if (!hoveringHandler){
       return;
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    hoveringHandler({dataX,dataY,domX,domY});
+    hoveringHandler({dataX,dataY,domX,domY,timestamp});
   }
   
-  mouseOutHandler = ({domX,domY}) => {
+  mouseOutHandler = ({domX,domY,timestamp}) => {
     let {mouseOutHandler} = this.props;
     if (!mouseOutHandler){
       return;
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    mouseOutHandler({dataX,dataY,domX,domY});
+    mouseOutHandler({dataX,dataY,domX,domY,timestamp});
   }
   
   fromDomXCoord(domX) {

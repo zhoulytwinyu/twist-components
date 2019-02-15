@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
-import TriPhaseXInteractionBox from "./TriPhaseXInteractionBox";
+import TriPhaseInteractionBox from "./TriPhaseInteractionBox";
 import {fromDomXCoord_Linear,
         fromDomYCoord_Linear} from "plot-utils";
 
-class TriPhaseXInteractionBoxWithReference extends PureComponent {
+class TriPhaseInteractionBoxWithReference extends PureComponent {
   constructor(props){
     super(props);
     this.state = {mode:"hovering"};
@@ -19,75 +19,87 @@ class TriPhaseXInteractionBoxWithReference extends PureComponent {
           panningHandler,pannedHandler,
           ...rest} = this.props;
     return (
-      <TriPhaseXInteractionBox  {...rest}
+      <TriPhaseInteractionBox  {...rest}
                                 clickedHandler={this.clickedHandler}
                                 doubleClickHandler={this.doubleClickHandler}
                                 selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
                                 panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
                                 >
         {children}
-      </TriPhaseXInteractionBox>
+      </TriPhaseInteractionBox>
     );
   }
   
-  clickedHandler = ({domX,domY}) => {
+  clickedHandler = ({domX,domY,timestamp}) => {
     let {clickedHandler} = this.props;
     if (!clickedHandler){
       return;
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    clickedHandler({dataX,dataY,domX,domY});
+    clickedHandler({dataX,dataY,domX,domY,timestamp});
   }
   
-  doubleClickHandler = ({domX,domY}) => {
+  doubleClickHandler = ({domX,domY,timestamp}) => {
     let {doubleClickHandler} = this.props;
     if (!doubleClickHandler){
       return;
     }
     let dataX = this.fromDomXCoord(domX);
     let dataY = this.fromDomYCoord(domY);
-    doubleClickHandler({dataX,dataY,domX,domY});
+    doubleClickHandler({dataX,dataY,domX,domY,timestamp});
   }
   
-  selectingHandler = ({startDomX,endDomX}) => {
+  selectingHandler = ({startDomX,endDomX,startDomY,endDomY}) => {
     let {selectingHandler} = this.props;
     if (!selectingHandler){
       return;
     }
     let startDataX = this.fromDomXCoord(startDomX);
     let endDataX = this.fromDomXCoord(endDomX);
-    selectingHandler({startDataX,endDataX,startDomX,endDomX});
+    let startDataY = this.fromDomYCoord(startDomY);
+    let endDataY = this.fromDomYCoord(endDomY);
+    selectingHandler({startDataX,endDataX,startDomX,endDomX,
+                      startDataY,endDataY,startDomY,endDomY});
   }
   
-  selectedHandler = ({startDomX,endDomX}) => {
+  selectedHandler = ({startDomX,endDomX,startDomY,endDomY}) => {
     let {selectedHandler} = this.props;
     if (!selectedHandler){
       return;
     }
     let startDataX = this.fromDomXCoord(startDomX);
     let endDataX = this.fromDomXCoord(endDomX);
-    selectedHandler({startDataX,endDataX,startDomX,endDomX});
+    let startDataY = this.fromDomYCoord(startDomY);
+    let endDataY = this.fromDomYCoord(endDomY);
+    selectedHandler({startDataX,endDataX,startDomX,endDomX,
+                      startDataY,endDataY,startDomY,endDomY});
   }
   
-  panningHandler = ({startDomX,endDomX}) => {
+  panningHandler = ({startDomX,endDomX,startDomY,endDomY}) => {
     let {panningHandler} = this.props;
     if (!panningHandler){
       return;
     }
     let startDataX = this.fromDomXCoord(startDomX);
     let endDataX = this.fromDomXCoord(endDomX);
-    panningHandler({startDataX,endDataX,startDomX,endDomX});
+    let startDataY = this.fromDomYCoord(startDomY);
+    let endDataY = this.fromDomYCoord(endDomY);
+    panningHandler({startDataX,endDataX,startDomX,endDomX,
+                      startDataY,endDataY,startDomY,endDomY});
   }
   
-  pannedHandler = ({startDomX,endDomX}) => {
+  pannedHandler = ({startDomX,endDomX,startDomY,endDomY}) => {
     let {pannedHandler} = this.props;
     if (!pannedHandler){
       return;
     }
     let startDataX = this.fromDomXCoord(startDomX);
     let endDataX = this.fromDomXCoord(endDomX);
-    pannedHandler({startDataX,endDataX,startDomX,endDomX});
+    let startDataY = this.fromDomYCoord(startDomY);
+    let endDataY = this.fromDomYCoord(endDomY);
+    pannedHandler({startDataX,endDataX,startDomX,endDomX,
+                      startDataY,endDataY,startDomY,endDomY});
   }
   
   fromDomXCoord(domX) {
@@ -101,4 +113,4 @@ class TriPhaseXInteractionBoxWithReference extends PureComponent {
   }
 }
 
-export default TriPhaseXInteractionBoxWithReference;
+export default TriPhaseInteractionBoxWithReference;

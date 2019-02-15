@@ -1,7 +1,9 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
 import {toDomXCoord_Linear} from "plot-utils";
-        
+
+const COLOR_LUT={"OR":"firebrick", "8S":"pink", "8E":"orange", "home":"green"}
+
 class LocationPlot extends PureComponent {
   constructor(props){
     super(props);
@@ -11,7 +13,6 @@ class LocationPlot extends PureComponent {
   render() {
     let { data, /*[{name,start,end},...]*/
           minX,maxX,width,
-          hoverDataX,
           ...rest} = this.props;
     return (
       <canvas ref={this.ref} height={1} width={width} {...rest}></canvas>
@@ -29,7 +30,7 @@ class LocationPlot extends PureComponent {
   draw() {
     let { data,
           minX,maxX,width} = this.props;
-    let preprocessedData = this.convertNameToColor(data,this.COLOR_LUT);
+    let preprocessedData = this.convertNameToColor(data,COLOR_LUT);
     preprocessedData = preprocessedData.filter( ({start,end})=> !(start>maxX || end<minX) );
     preprocessedData = preprocessedData.map( ({start,end,...rest})=> ({ start:Math.max(minX,start),
                                                                         end:Math.min(maxX,end),
@@ -67,8 +68,5 @@ class LocationPlot extends PureComponent {
     return toDomXCoord_Linear(width,minX,maxX,dataX);
   }
 }
-
-LocationPlot.prototype.COLOR_LUT = {"OR":"firebrick", "8S":"pink", "8E":"orange", "home":"green"}
-
 
 export default LocationPlot;
