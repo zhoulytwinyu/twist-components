@@ -3,10 +3,10 @@ import {memoize_one} from "memoize";
 import {toDomXCoord_Linear,
         applyCanvasStyle} from "plot-utils";
 import ProcedurePlotMain from "./ProcedurePlotMain";
-import ProcedurePlotSelection from "./ProcedurePlotSelection";
-import ProcedurePlotTimeDiff from "./ProcedurePlotTimeDiff";
-import ProcedurePlotClickSelectionAddon from "./ProcedurePlotClickSelectionAddon";
-import ProcedurePlotHoverSelectionAddon from "./ProcedurePlotHoverSelectionAddon";
+//~ import ProcedurePlotSelection from "./ProcedurePlotSelection";
+//~ import ProcedurePlotTimeDiff from "./ProcedurePlotTimeDiff";
+//~ import ProcedurePlotClickSelectionAddon from "./ProcedurePlotClickSelectionAddon";
+//~ import ProcedurePlotHoverSelectionAddon from "./ProcedurePlotHoverSelectionAddon";
 
 class ProcedurePlot extends PureComponent {
   render() {
@@ -21,6 +21,7 @@ class ProcedurePlot extends PureComponent {
                             data={data}
                             {...rest}
                             />
+        {/*
         <ProcedurePlotSelection minX={minX} maxX={maxX}
                                 width={width} height={height}
                                 selection={selection}
@@ -32,6 +33,7 @@ class ProcedurePlot extends PureComponent {
                                 minX={minX} maxX={maxX} width={width}
                                 {...rest}
                                 />
+        */}
       </>
     );
   }
@@ -48,6 +50,7 @@ class ProcedurePlotAddon extends PureComponent {
           } = this.props;
     return (
       <>
+      {/*
         <ProcedurePlotClickSelectionAddon clickDomX={clickDomX} clickDomY={clickDomY} clickTimeStamp={clickTimeStamp}
                                           data={data}
                                           minX={minX} maxX={maxX} width={width} height={height}
@@ -57,7 +60,7 @@ class ProcedurePlotAddon extends PureComponent {
                                           data={data}
                                           minX={minX} maxX={maxX} width={width} height={height}
                                           selectHandler={this.handleAutoSelect}
-                                          />
+                                          />*/}
       </>
     );
   }

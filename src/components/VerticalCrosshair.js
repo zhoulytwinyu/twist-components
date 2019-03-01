@@ -33,7 +33,10 @@ class VerticalCrosshair extends PureComponent {
       return;
     }
     let hoverDomX = this.toDomXCoord(hoverX);
-    ctx.fillRect(hoverDomX-0.5,0,1,1);
+    ctx.beginPath();
+    ctx.moveTo(hoverDomX-0.5,0);
+    ctx.lineTo(hoverDomX-0.5,1);
+    ctx.stroke();
   }
   
   toDomXCoord(dataX) {

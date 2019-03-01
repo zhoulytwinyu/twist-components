@@ -1,7 +1,19 @@
-.RespPlotBundle-contained {
+.RespPlotBundle-fillParent {
   position:absolute;
   top:0px;
   left:0px;
   height:100%;
   width:100%;
+}
+
+.RespPlotBundle-opacity25 {
+  opacity:0.25;
+}
+
+.RespPlotBundle-opacity50 {
+  opacity:0.5;
+}
+
+.RespPlotBundle-opacity75 {
+  opacity:0.75;
 }

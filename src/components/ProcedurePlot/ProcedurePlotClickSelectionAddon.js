@@ -1,7 +1,5 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
-import {toDomXCoord_Linear,
-        applyCanvasStyle} from "plot-utils";
 import {LABEL_DOMY,LABEL_DOMX_OFFSET,PROCEDURE_STYLE_LUT} from "./ProcedurePlotConstants";
 
 class ProcedurePlotClickSelectionAddon extends PureComponent {
@@ -26,9 +24,9 @@ class ProcedurePlotClickSelectionAddon extends PureComponent {
   }
   
   select() {
-    let {clickDomX, clickDomY,
-        data,
-        minX,maxX,width,height} = this.props;
+    let { clickDomX, clickDomY, clickTimeStamp,
+          data,
+          minX,maxX,width,height} = this.props;
     if ( clickDomX === null ||
          clickDomX === undefined ||
          clickDomY === null ||
@@ -36,10 +34,9 @@ class ProcedurePlotClickSelectionAddon extends PureComponent {
       this.updateSelection(null);
       return;
     }
-    let {LABEL_DOMY} = this;
     // Filling in textStyle, etc
     let preprocessedData = this.fillIndex(data);
-    preprocessedData = this.fillProcedureInfo(preprocessedData,PROCEDURE_STYLE_LUT);
+    preprocessedData = this.fillProcedureInfo(preprocessedData,);
     preprocessedData = this.filterByRange(preprocessedData,minX,maxX);
     preprocessedData = this.convertToDomXCoord(preprocessedData,minX,maxX,width);
     let pickingCanvases = this.createPickingCanvases(minX,maxX,width,height,preprocessedData);

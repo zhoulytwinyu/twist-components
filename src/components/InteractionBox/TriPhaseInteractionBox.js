@@ -31,6 +31,7 @@ class TriPhaseInteractionBox extends PureComponent {
   }
   
   componentDidMount() {
+    console.log('!@#!');
     document.addEventListener("mousemove",this.handleDocumentMouseMove);
     document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }

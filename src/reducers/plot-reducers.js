@@ -1,10 +1,10 @@
 import { CHANGE_TOP_LEVEL_PLOT } from "../actions/plot-actions";
 
 let initialState = {
-  minX:0,
-  maxX:18000,
+  minX:1482858000,
+  maxX:1513698300,
   minY:0,
-  maxY:400,
+  maxY:100,
   VerticalCrosshair_X:null,
 }
 

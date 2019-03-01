@@ -1,7 +1,8 @@
-import React, { PureComponent } from 'react';
+import { PureComponent } from 'react';
 import {memoize_one} from "memoize";
 import {bisect_left,
         bisect_right} from "bisect";
+import {rowIndexedToColumnIndexed} from "plot-utils";
 
 class HoverSelectionAddon extends PureComponent {
   constructor(props){
@@ -19,7 +20,7 @@ class HoverSelectionAddon extends PureComponent {
       return;
     }
     else {
-      this.lastHoverTimeStamp=hoverTimeStamp
+      this.lastHoverTimeStamp=hoverTimeStamp;
       this.select();
     }
   }
@@ -41,8 +42,8 @@ class HoverSelectionAddon extends PureComponent {
   }
   
   selectLeft() {
-    let {data,hoverX} = this.props;
-    let dataX = this.getDataX(data);
+    let {data,hoverX,selectHandler} = this.props;
+    let {time:dataX} = this.columnIndex(data);
     if (dataX.length === 0 || hoverX === null || hoverX === undefined) {
       this.updateSelection({selection:null});
       return;
@@ -60,7 +61,7 @@ class HoverSelectionAddon extends PureComponent {
   
   selectRight() {
     let {data,hoverX} = this.props;
-    let dataX = this.getDataX(data);
+    let {time:dataX} = this.columnIndex(data);
     if (dataX.length === 0 || hoverX === null || hoverX === undefined) {
       this.updateSelection({selection:null});
       return;
@@ -78,7 +79,7 @@ class HoverSelectionAddon extends PureComponent {
   
   selectClosest() {
     let {data,hoverX} = this.props;
-    let dataX = this.getDataX(data);
+    let {time:dataX} = this.columnIndex(data);
     if (dataX.length === 0 || hoverX === null || hoverX === undefined) {
       this.updateSelection({selection:null});
       return;
@@ -103,6 +104,7 @@ class HoverSelectionAddon extends PureComponent {
   }
   
   updateSelection({selection}){
+    console.log(selection);
     if (!this.memo) {
       this.memo = {};
     }
@@ -112,8 +114,8 @@ class HoverSelectionAddon extends PureComponent {
     }
   }
   
-  getDataX = memoize_one((data) => {
-    return data.map( ({x})=>x );
+  columnIndex = memoize_one((data) => {
+    return rowIndexedToColumnIndexed(data,["time"]);
   });
 }
 

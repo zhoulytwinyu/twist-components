@@ -9,6 +9,8 @@ class OnPlotXRangeSelection extends PureComponent {
     let { minX,maxX,width,
           startX,endX,
           height,leftHandle,rightHandle,topHandle,
+          draggingLeftHandler,draggingMainHandler,draggingRightHandler,
+          draggedLeftHandler,draggedMainHandler,draggedRightHandler,
           ...rest} = this.props;
     let {SIDE_HANDLE_WIDTH,TOP_HANDLE_HEIGHT} = this;
     

@@ -27,7 +27,7 @@ class LocationPlotHoverLabel extends PureComponent {
     return (
       <div {...rest}>
         <div className="LocationPlotLabel-floatDiv" style={{left:labelDomX}}>
-          name
+          {name}
         </div>
       </div>
     );

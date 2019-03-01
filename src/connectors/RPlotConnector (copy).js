@@ -4,11 +4,12 @@ import { memoize_one } from "memoize";
 import { changeTopLevelPlot } from "../actions/plot-actions";
 // Import components
 import HoverSelectionAddon from "../components/HoverSelectionAddon";
-import XAxis_Date from "../components/XAxis_Date";
-import VerticalGrid_Date from "../components/VerticalGrid_Date";
+import XAxisDate from "../components/XAxisDate";
+import VerticalGridDate from "../components/VerticalGridDate";
+import VerticalGrid from "../components/VerticalGrid";
 import RespiratoryScoreLimitSlabGrid from "../components/RespiratoryScoreLimitSlabGrid";
 import RespiratoryPlot from "../components/RespiratoryPlot";
-import LocationPlot from "../components/LocationPlot";
+import LocationPlot from "../components/LocationPlot/LocationPlot";
 import LocationPlotHoverLabel from "../components/LocationPlot/LocationPlotHoverLabel";
 import LocationPlot_YAxisTwoLevelPanel from "../components/LocationPlot/LocationPlot_YAxisTwoLevelPanel";
 import ProcedurePlot, {ProcedurePlotAddon} from "../components/ProcedurePlot";
@@ -81,13 +82,37 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
     
     return (
       <div style={{position:"relative", width:LEFT_WIDTH+PLOT_WIDTH, height:TOP_HEIGHT+PLOT_HEIGHT+BOTTOM_HEIGHT}}>
+        {/*No-render addons*/}
+        {/*select plot data points*/}
+        {/*
+        <HoverSelectionAddon  data={selectionData}
+                              //~ hoverX={hoverX}
+                              //~ hoverTimeStamp={hoverTimeStamp}
+                              //~ selectHandler={this.dataPoint_selectHandler}
+                              //~ />
+        */}
+        {/*select procedure on click*/}
+        {/*
+        <ProcedurePlotAddon data={procedure}
+                            minX={minX} maxX={maxX} width={PLOT_WIDTH} height={PLOT_HEIGHT}
+                            clickDomX={clickDomX} clickDomY={clickDomY} clickTimeStamp={clickTimeStamp}
+                            hoverX={hoverX} hoverTimeStamp={hoverTimeStamp}
+                            selectHandler={this.procedurePlot_selectHandler}
+                            autoSelectHandler={this.procedurePlot_autoSelectHandler}
+                            />
+        */}
+        {/*End No-render addons*/}
         {/*Location plot*/}
         <div style={{position:"absolute",width:LEFT_WIDTH,height:TOP_HEIGHT}}>
-          <LocationPlot_YAxisTwoLevelPanel  className="RespPlotBundle-fillParent"
+          {/*<LocationPlot_YAxisTwoLevelPanel  className="RespPlotBundle-fillParent"
                                             width={LEFT_WIDTH} height={TOP_HEIGHT}
-                                            />
+                                            />*/}
         </div>
         <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT,left:LEFT_WIDTH}}>
+          <VerticalGrid className="RespPlotBundle-fillParent"
+                        grid={[{x:2000},{x:8000},{x:16000}]}
+                        minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                        />
           <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT/2,top:TOP_HEIGHT/4,backgroundColor:"#fff5e9"}}>
             <LocationPlot className="RespPlotBundle-fillParent"
                           minX={minX} maxX={maxX} width={PLOT_WIDTH}
@@ -152,14 +177,15 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                                           data={respiratoryScoreLimits}
                                           minY={minY} maxY={maxY} height={PLOT_HEIGHT}
                                           />
-          <VerticalGrid_Date  className="RespPlotBundle-fillParent RespPlotBundle-opacity25"
-                              minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                              />
+          <VerticalGridDate className="RespPlotBundle-fillParent"
+                            minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                            />
           <RespiratoryPlot  className="RespPlotBundle-fillParent"
                             respiratoryScores={respiratoryScore} iNO={iNO} anesthetics={anesthetics}
                             minX={minX} maxX={maxX} width={PLOT_WIDTH}
                             minY={minY} maxY={maxY} height={PLOT_HEIGHT}
                             />
+        {/*
           <ProcedurePlot  className="RespPlotBundle-fillParent"
                           data = {procedure}
                           selection={procedurePlot_selection || procedurePlot_autoSelection}
@@ -171,6 +197,7 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                           minX={minX} maxX={maxX} width={PLOT_WIDTH}
                           minY={minY} maxY={maxY} height={PLOT_HEIGHT} 
                           />
+        */}
           <VerticalCrosshair className="RespPlotBundle-fillParent"
                              hoverX={verticalCrosshair_X}
                              minX={minX} maxX={maxX} width={PLOT_WIDTH}
@@ -209,7 +236,7 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
         {/*End Respiratory plot area*/}
         {/*X Axis*/}
         <div style={{position:"absolute",width:PLOT_WIDTH,height:BOTTOM_HEIGHT,left:LEFT_WIDTH,top:PLOT_HEIGHT+TOP_HEIGHT}}>
-          <XAxis_Date className="RespPlotBundle-fillParent"
+          <XAxisDate className="RespPlotBundle-fillParent"
                       minX={minX} maxX={maxX} height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
                      />
           <HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
