@@ -23,8 +23,8 @@ class DragInteractionBox extends PureComponent {
   }
   
   componentDidMount() {
-    document.addEventListener("mousemove",this.handleDocumentMouseMove);
-    document.addEventListener("mouseup",this.handleDocumentMouseUp);
+    //~ document.addEventListener("mousemove",this.handleDocumentMouseMove);
+    //~ document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
 
   componentWillUnmount(){

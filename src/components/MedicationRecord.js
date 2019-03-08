@@ -1,76 +1,108 @@
 import React, { PureComponent } from 'react';
 import {memoize_one} from "memoize";
-import {toDomXCoord_Linear,
-        toDomCoord_Categorical,
-        scatterPlot,
-        labelPlot} from "plot-utils";
 
-const SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"}
-
-class MedicationRecordPlot extends PureComponent {
-  constructor(props){
-    super(props);
-    this.ref = React.createRef();
-  }
-
+class MedicationRecordRelay extends PureComponent {
   render() {
-    let { minX,maxX,width,
-          height,rowHeight,
-          category, /* [{name,start,end,bgStyle,textStyle,textPosition,textRotation}] */
-          data, /* [{name,start,end,dose,route,score}] */
-          ...rest
-          } = this.props;
-    
-    return (
-      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
-    );
+    return null;
   }
 
   componentDidMount(){
-    this.draw();
+    this.modifyData();
   }
   
   componentDidUpdate(){
-    this.draw();
+    this.modifyData();
   }
   
-  draw() {
-    let { minX,maxX,width,
-          height,rowHeight,
-          category,
-          data} = this.props;
-    let canvas = this.ref.current;
-    let ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,width,height);
-    let medPosLUT = this.getMedPosLUT(category);
-    // Draw 
-    let domX = data.map( ({start,end})=>this.toDomXCoord((start+end)/2) );
-    let domY = data.map( ({name})=>this.toDomYCoord(name,medPosLUT,"middle") );
-    let dose = data.map( ({dose})=>dose);
-    scatterPlot(canvas,domX,domY,{shape:"dot",radius:rowHeight/2,fillStyle:"lightgrey"});
-    scatterPlot(canvas,domX,domY,{shape:"dot",radius:rowHeight/2-2,fillStyle:"red"});
-    labelPlot(canvas,domX,domY,dose,"center","middle",0);
+  modifyData() {
+    let { minX,maxX,width,rowHeight,
+          data,useMeds,medCategory,categoryOrder} = this.props;
+    categoryOrder = this.expandCategoryOrder(categoryOrder);
+    let filteredData = this.filterDataByUsage(data,useMeds);
+    //console.log("filtered by usage",filteredData);
+    filteredData = this.assignCategory(filteredData, medCategory);
+    //console.log("assigned",filteredData);
+    filteredData = this.groupData(filteredData, maxX-minX);
+    //console.log("grouped",filteredData);
+    filteredData = this.filterDataByRange(filteredData,minX,maxX);
+    //console.log("filtered by range",filteredData);
+    let height = this.calculateHeight(filteredData,rowHeight);
+    let {categoryPosition,medPosition} = this.getCategoryAndMedsPosition(filteredData,categoryOrder);
+    
+    this.handleUpdate({categoryPosition,medPosition,height,filteredData});
+  }
+
+  handleUpdate(obj) {
+    let {updateHandler} = this.props;
+    updateHandler(obj);
   }
   
-  toDomXCoord(dataX) {
-    let {minX,maxX,width} = this.props;
-    return toDomXCoord_Linear(width,minX,maxX,dataX);
+  expandCategoryOrder(categoryOrder) {
+    return categoryOrder.concat(["other"]);
   }
   
-  toDomYCoord(med,medPosLUT,type) {
-    let {rowHeight} = this.props;
-    return toDomCoord_Categorical(med,medPosLUT,rowHeight,type);
+  filterDataByUsage(data,useMeds) {
+    return data.filter( ({name})=> useMeds.has(name) );
   }
   
-  getMedPosLUT(medPosition) {
-    let medPosLUT = {};
-    for (let {name,start,end} of medPosition) {
-      medPosLUT[name] = {start,end};
+  assignCategory(data,medCategory) {
+    return data.map((row)=>({ ...row,
+                              category: medCategory[row.name] || "other"
+                              })
+                    );
+  }
+  
+  groupData(data,diffX) {
+    // TODO
+    return data;
+  }
+  
+  filterDataByRange(data,minX,maxX) {
+    return data.filter( ({start,end})=> {
+        if (start>=maxX) {
+          return false;
+        }
+        if (end === undefined || end === null) {
+          return true;
+        }
+        if (end <= minX) {
+          return false;
+        }
+        return true;
+      } );
+  }
+  
+  calculateHeight(data,rowHeight) {
+    return new Set(data.map( ({name})=>name )).size*rowHeight;
+  }
+  
+  getCategoryAndMedsPosition(data,categoryOrder) {
+    let categoryMeds_LUT = {};
+    for (let {name,category} of data) {
+      categoryMeds_LUT[category] = categoryMeds_LUT[category] || new Set();
+      categoryMeds_LUT[category].add(name);
     }
-    return medPosLUT;
+    
+    let categoryPosition = [];
+    let medPosition = [];
+    let startPos = 0;
+    for (let category of categoryOrder) {
+      let medSet = categoryMeds_LUT[category];
+      if (!medSet) {
+        continue;
+      }
+      // update categoryPosition
+      categoryPosition.push({name:category,start:startPos,end:startPos+medSet.size});
+      // update medPosition
+      let medList = [...medSet];
+      medList.sort();
+      for (let med of medList){
+        medPosition.push({name:med,start:startPos,end:startPos+1});
+        startPos+=1;
+      }
+    }
+    return {categoryPosition,medPosition};
   }
 }
 
-MedicationRecordPlot.prototype.SHAPE_LUT={"iv":"square","po":"circle","cont":"rectangle"};
-
-export default MedicationRecordPlot;
+export default MedicationRecordRelay;

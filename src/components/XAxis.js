@@ -1,25 +1,17 @@
 import React, { PureComponent } from "react";
-import {bisect_left,bisect_right} from "bisect";
-import {toDomXCoord_Linear} from "plot-utils";
 
 class XAxis extends PureComponent {
   constructor(props) {
     super(props);
     this.ref= React.createRef();
-    // Buffer
-    this.memo = {};
-    this.memo.prevLabels = null;
-    this.memo.bitmaps = [];
-    this.memo.domXs = [];
   }
   
   render() {
-    let { width,minX,maxX,
-          height,
-          Xs,labels,
+    let { width,height,
+          Xs,bitmaps,positions,
           ...rest} = this.props;
     return (
-      <canvas id="sadasd" ref={this.ref} width={width} height={height} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
     );
   }
   
@@ -32,31 +24,15 @@ class XAxis extends PureComponent {
   }
   
   draw() {
-    let { minX,maxX,width,
+    let { width,
           height,
-          Xs,labels} = this.props;
-    let {memo} = this;
-    // Generate memo and bitmaps
-    if (memo.prevLabels !== labels) {
-      memo.prevLabels = labels;
-      memo.bitmaps.length = labels.length;
-      memo.domXs.length = labels.length;
-      for (let i=0; i<labels.length; i++) {
-        memo.bitmaps[i] = this.createTextBitmaps(labels[i]);
-      }
-    }
-    // Filter
-    let startIndex = Math.max(0,bisect_right(Xs,minX));
-    let endIndex = Math.min(Xs.length-1,bisect_left(Xs,maxX));
-    // Coord convert
-    for (let i=startIndex; i<=endIndex; i++) {
-      memo.domXs[i] = toDomXCoord_Linear(width,minX,maxX,Xs[i]);
-    }
+          Xs,bitmaps,positions} = this.props;
     // Plot
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
-    this.bitmapPlot(ctx,width,height,memo.domXs,memo.bitmaps,startIndex,endIndex);
+    this.bitmapPlot(ctx,width,height,Xs,bitmaps,positions);
+    this.ticPlot(ctx,width,height,Xs);
   }
   
   createTextBitmaps(text) {
@@ -74,15 +50,39 @@ class XAxis extends PureComponent {
     return canvas;
   }
   
-  bitmapPlot(ctx,width,height,domXs,bitmaps,startIndex,endIndex){
+  bitmapPlot(ctx,width,height,domXs,bitmaps,positions){
     let x = null;
     let bitmap = null;
     let y = 5;
-    for (let i=startIndex; i<=endIndex; i++) {
+    let position = null;
+    for (let i=0; i<domXs.length; i++) {
       bitmap = bitmaps[i];
-      x = Math.round(domXs[i]-bitmap.width/2);
+      position = positions[i];
+      x = domXs[i];
+      switch (position) {
+        case 0:
+          x = Math.round(x);
+          break;
+        case 1:
+          x = Math.round(x-bitmap.width/2);
+          break;
+        case 2:
+          x = Math.round(x-bitmap.width);
+          break;
+        default:
+          throw new Error("ProgrammerTooDumbError");
+      }
       ctx.drawImage(bitmap,x,y);
     }
+  }
+  
+  ticPlot(ctx,width,height,domXs){
+    ctx.beginPath();
+    for (let x of domXs){
+      ctx.moveTo(Math.round(x),0);
+      ctx.lineTo(Math.round(x),3);
+    }
+    ctx.stroke();
   }
 }
 

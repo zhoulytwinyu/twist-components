@@ -67,7 +67,6 @@ class RespiratoryScoreLimitSlabGrid extends PureComponent {
   
   generateColor = memoize_one((data)=>{
     let color = data.map((x,i)=>COLOR_CYCLE[i%COLOR_CYCLE.length]);
-    color.reverse();
     return color;
   });
 
@@ -79,7 +78,6 @@ class RespiratoryScoreLimitSlabGrid extends PureComponent {
       color = colors[i];
       startDomY = startDomYs[i];
       endDomY = endDomYs[i];
-      console.log({color,startDomY});
       ctx.fillStyle = color;
       ctx.fillRect(0,startDomY,1,endDomY-startDomY);
     }

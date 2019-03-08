@@ -2,7 +2,7 @@ import React, { PureComponent } from "react";
 import {bisect_left,bisect_right} from "bisect";
 import {toDomXCoord_Linear} from "plot-utils";
 
-class VerticalGrid_Slab extends PureComponent {
+class VerticalGridSlab extends PureComponent {
   constructor(props) {
     super(props);
     this.ref= React.createRef();
@@ -37,8 +37,6 @@ class VerticalGrid_Slab extends PureComponent {
     // Filter
     let startIndex = Math.max(0,bisect_right(ends,minX));
     let endIndex = Math.min(starts.length-1,bisect_left(starts,maxX));
-    memo.startDomXs.length = endIndex-startIndex+1; 
-    memo.endDomXs.length = endIndex-startIndex+1;
     // Coord convert
     for (let i=startIndex; i<=endIndex; i++) {
       memo.startDomXs[i] = toDomXCoord_Linear(width,minX,maxX,starts[i]);
@@ -65,4 +63,4 @@ class VerticalGrid_Slab extends PureComponent {
   }
 }
 
-export default VerticalGrid_Slab;
+export default VerticalGridSlab;

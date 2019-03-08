@@ -1,6 +1,4 @@
 import React, { PureComponent } from "react";
-import {bisect_left,bisect_right} from "bisect";
-import {toDomXCoord_Linear} from "plot-utils";
 import {generateAxisDateGrid} from "plot-utils";
 import VerticalGrid_Line from "./VerticalGrid_Line";
 
@@ -26,14 +24,9 @@ class VerticalGrid_Date extends PureComponent {
       memo.gridPos = gridPos;
       memo.colors = new Array(gridPos.length).fill("black");
     }
-    let startIndex = Math.max(0,bisect_right(memo.gridPos,minX));
-    let endIndex = Math.min(memo.gridPos.length-1,bisect_left(memo.gridPos,maxX));
-    let gridPos = memo.gridPos.slice(startIndex,endIndex+1)
-                              .map((x)=>toDomXCoord_Linear(width,minX,maxX,x));
-    let colors = memo.colors.slice(startIndex,endIndex+1);
     return (
-      <VerticalGrid_Line  width={width}
-                          Xs={gridPos} colors={colors}
+      <VerticalGrid_Line  width={width} minX={minX} maxX={maxX}
+                          Xs={memo.gridPos} colors={memo.colors}
                           {...rest}
                           />
     );

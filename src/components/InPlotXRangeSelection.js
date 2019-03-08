@@ -9,7 +9,6 @@ class InPlotXRangeSelection extends PureComponent {
     super(props);
     this.ref = React.createRef();
     this.memo = {};
-    this.memo.clean = true;
   }
 
   render() {
@@ -33,18 +32,14 @@ class InPlotXRangeSelection extends PureComponent {
     let { minX, maxX, width,
           startX,endX,
           ...rest} = this.props;
-    let {memo} = this;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
-    if (!memo.clean) {
-      ctx.clearRect(0,0,width,1);
-      memo.clean=true;
-    }
-    
+    ctx.clearRect(0,0,width,1);
     if (startX === undefined || startX === null ||
         endX === undefined || endX === null ) {
       return;
     }
+    let {memo} = this;
     // Coord
     let startDomX= Math.max(0,toDomXCoord_Linear(width,minX,maxX,startX));
     let endDomX = Math.min(width,toDomXCoord_Linear(width,minX,maxX,endX));

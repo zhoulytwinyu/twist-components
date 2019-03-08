@@ -1,4 +1,4 @@
-export const medication = [ {"start":1482935460.0, "name":"morphine", "dose":0.08},
+export const medications = [{"start":1482935460.0, "name":"morphine", "dose":0.08},
                             {"start":1482936600.0, "name":"fentanyl", "dose":0.3},
                             {"start":1482948300.0, "name":"fentanyl", "dose":0.1},
                             {"start":1482953460.0, "name":"fentanyl", "dose":0.2},
@@ -1674,79 +1674,202 @@ export const medication = [ {"start":1482935460.0, "name":"morphine", "dose":0.0
                             {"start":1514336640.0, "name":"lorazepam", "dose":0.45}
                             ];
 
-//~ const categoryMedicationLUT = { "Narcotics":[],
-                                //~ "Benz":"loop",
-                                //~ "Anes":"thiazide",
-                                //~ "a2 AG":"vol",
-                                //~ "A.Inf":""
-                                //~ "A.Emet"
-                                //~ "A.Psy"
-                                //~ OI
-                                //~ NMB
-                                //~ A.Dep
-                                //~ L.Anes
-                                //~ Other,
-                                //~ };
 
-//~ export const order = [{"name":"morphine", "group":"Narc"},
-                      //~ {"name":"fentanyl", "group":"Narc"},
-                      //~ {"name":"sufentanil", "group":"Narc"},
-                      //~ {"name":"hydromorphone", "group":"Narc"},
-                      //~ {"name":"methadone", "group":"Narc"},
-                      //~ {"name":"codeine", "group":"Narc"},
-                      //~ {"name":"oxycodone", "group":"Narc"},
-                      //~ {"name":"naloxone", "group":"Narc"},
-                      //~ {"name":"midazolam", "group":"Benz"},
-                      //~ {"name":"lorazepam", "group":"Benz"},
-                      //~ {"name":"flumazenil", "group":"Benz"},
-                      //~ {"name":"propofol", "group":"Anes"},
-                      //~ {"name":"ketamine", "group":"Anes"},
-                      //~ {"name":"etomidate", "group":"Anes"},
-                      //~ {"name":"isoflurane", "group":"Anes"},
-                      //~ {"name":"dexmedetomidine", "group":"a2 AG"},
-                      //~ {"name":"clonidine", "group":"a2 AG"},
-                      //~ {"name":"acetaminophen", "group":"A.Inf"},
-                      //~ {"name":"ibuprofen", "group":"A.Inf"},
-                      //~ {"name":"naproxen", "group":"A.Inf"},
-                      //~ {"name":"scopolamine", "group":""},
-                      //~ {"name":"ondansetron", "group":"A.Emet"},
-                      //~ {"name":"dronabinol", "group":"A.Emet"},
-                      //~ {"name":"aprepitant", "group":"A.Emet"},
-                      //~ {"name":"haloperidol", "group":"A.Psy"},
-                      //~ {"name":"quetiapine", "group":"A.Psy"},
-                      //~ {"name":"risperidone", "group":"A.Psy"},
-                      //~ {"name":"chloral hydrate", "group":"O.I."},
-                      //~ {"name":"melatonin", "group":"O.I."},
-                      //~ {"name":"caffeine", "group":"O.I."},
-                      //~ {"name":"vecuronium", "group":"NMB"},
-                      //~ {"name":"cisatracurium", "group":"NMB"},
-                      //~ {"name":"rocuronium", "group":"NMB"},
-                      //~ {"name":"succinylcholine", "group":"NMB"},
-                      //~ {"name":"amitriptyline", "group":"A.Dep"},
-                      //~ {"name":"citalopram", "group":"A.Dep"},
-                      //~ {"name":"escitalopram", "group":"A.Dep"},
-                      //~ {"name":"fluoxetine", "group":"A.Dep"},
-                      //~ {"name":"fluvoxamine", "group":"A.Dep"},
-                      //~ {"name":"sertraline", "group":"A.Dep"},
-                      //~ {"name":"trazodone", "group":"A.Dep"},
-                      //~ {"name":"bupivacaine", "group":"L.Anes"},
-                      //~ {"name":"bupivacaine-epinephrine", "group":"L.Anes"},
-                      //~ {"name":"cocaine topical", "group":"L.Anes"},
-                      //~ {"name":"epinephrine/lidocaine/tetracaine topical", "group":"L.Anes"},
-                      //~ {"name":"epinephrine-lidocaine", "group":"L.Anes"},
-                      //~ {"name":"ropivacaine", "group":"L.Anes"},
-                      //~ {"name":"baclofen", "group":"Other"},
-                      //~ {"name":"hydroxyzine", "group":"Other"},
-                      //~ {"name":"dextromethorphan", "group":"Other"},
-                      //~ {"name":"dextromethorphan-guaifenesin", "group":"Other"},
-                      //~ {"name":"guaifenesin", "group":"Other"},
-                      //~ {"name":"methylphenidate", "group":"Other"}
-                      //~ ];
-
-//~ const useCategories = new Set(["furosemide","bumetanide","chlorotiazide","albumin","spironolactone"]);
-
-export {medication,
-        medCategory,
-        useMeds,
-        categoryOrder
-        };
+export const categoryStructure = [
+  {
+    "name": "Narc",
+    "children": [
+      {
+        "name": "morphine"
+      },
+      {
+        "name": "fentanyl"
+      },
+      {
+        "name": "sufentanil"
+      },
+      {
+        "name": "hydromorphone"
+      },
+      {
+        "name": "methadone"
+      },
+      {
+        "name": "codeine"
+      },
+      {
+        "name": "oxycodone"
+      },
+      {
+        "name": "naloxone"
+      }
+    ]
+  },
+  {
+    "name": "Benz",
+    "children": [
+      {
+        "name": "midazolam"
+      },
+      {
+        "name": "lorazepam"
+      },
+      {
+        "name": "flumazenil"
+      }
+    ]
+  },
+  {
+    "name": "Anes",
+    "children": [
+      {
+        "name": "propofol"
+      },
+      {
+        "name": "ketamine"
+      },
+      {
+        "name": "etomidate"
+      },
+      {
+        "name": "isoflurane"
+      }
+    ]
+  },
+  {
+    "name": "a2 AG",
+    "children": [
+      {
+        "name": "dexmedetomidine"
+      },
+      {
+        "name": "clonidine"
+      }
+    ]
+  },
+  {
+    "name": "A.Inf",
+    "children": [
+      {
+        "name": "acetaminophen"
+      },
+      {
+        "name": "ibuprofen"
+      },
+      {
+        "name": "naproxen"
+      },
+      {
+        "name": "scopolamine"
+      }
+    ]
+  },
+  {
+    "name": "A.Emet",
+    "children": [
+      {
+        "name": "ondansetron"
+      },
+      {
+        "name": "dronabinol"
+      },
+      {
+        "name": "aprepitant"
+      }
+    ]
+  },
+  {
+    "name": "A.Psy",
+    "children": [
+      {
+        "name": "haloperidol"
+      },
+      {
+        "name": "quetiapine"
+      },
+      {
+        "name": "risperidone"
+      }
+    ]
+  },
+  {
+    "name": "O.I.",
+    "children": [
+      {
+        "name": "chloral hydrate"
+      },
+      {
+        "name": "melatonin"
+      },
+      {
+        "name": "caffeine"
+      }
+    ]
+  },
+  {
+    "name": "NMB",
+    "children": [
+      {
+        "name": "vecuronium"
+      },
+      {
+        "name": "cisatracurium"
+      },
+      {
+        "name": "rocuronium"
+      },
+      {
+        "name": "succinylcholine"
+      }
+    ]
+  },
+  {
+    "name": "A.Dep",
+    "children": [
+      {
+        "name": "amitriptyline"
+      },
+      {
+        "name": "citalopram"
+      },
+      {
+        "name": "escitalopram"
+      },
+      {
+        "name": "fluoxetine"
+      },
+      {
+        "name": "fluvoxamine"
+      },
+      {
+        "name": "sertraline"
+      },
+      {
+        "name": "trazodone"
+      }
+    ]
+  },
+  {
+    "name": "L.Anes",
+    "children": [
+      {
+        "name": "bupivacaine"
+      },
+      {
+        "name": "bupivacaine-epinephrine"
+      },
+      {
+        "name": "cocaine topical"
+      },
+      {
+        "name": "epinephrine/lidocaine/tetracaine topical"
+      },
+      {
+        "name": "epinephrine-lidocaine"
+      },
+      {
+        "name": "ropivacaine"
+      }
+    ]
+  }
+]

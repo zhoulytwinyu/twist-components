@@ -3,14 +3,16 @@ import { connect } from "react-redux";
 import { memoize_one } from "memoize";
 import { changeTopLevelPlot } from "../actions/plot-actions";
 // Import components
+import Timer from "../components/Timer";
 import HoverSelectionAddon from "../components/HoverSelectionAddon";
-import XAxis_Date from "../components/XAxis_Date";
+import XAxisDate from "../components/XAxisDate";
 import VerticalGrid_Date from "../components/VerticalGrid_Date";
 import RespiratoryScoreLimitSlabGrid from "../components/RespiratoryScoreLimitSlabGrid";
 import RespiratoryPlot from "../components/RespiratoryPlot";
 import LocationPlot from "../components/LocationPlot";
-import LocationPlotHoverLabel from "../components/LocationPlot/LocationPlotHoverLabel";
-import LocationPlot_YAxisTwoLevelPanel from "../components/LocationPlot/LocationPlot_YAxisTwoLevelPanel";
+import LocationPlotYAxisTwoLevelPanel from "../components/LocationPlotYAxisTwoLevelPanel";
+import LocationPlotSelector from "../components/LocationPlotSelector";
+import LocationPlotSelectionLabel from "../components/LocationPlotSelectionLabel";
 import ProcedurePlot, {ProcedurePlotAddon} from "../components/ProcedurePlot";
 //import ProcedurePlotClickSelectionAddon from "../components/ProcedurePlotClickSelectionAddon";
 import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection";
@@ -51,19 +53,29 @@ const PLOT_HEIGHT=100;
 const BOTTOM_HEIGHT=50;
 
 const EMPTY_ARRAY=[];
+const ssss = {position:"absolute",width:1000,height:100};
 
 class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
+  constructor(props) {
+    super(props);
+    this.state = {hoverX:null,hoverY:null,
+                  hoverDomX:null,hoverDomY:null,
+                  hoverTimeStamp:null,
+                  };
+    this.setState = this.setState.bind(this);
+  }
   render() {
     let { minX,maxX,
           minY,maxY,
           panningX,
-          hoverX, hoverY,
-          hoverDomX, hoverDomY,
-          hoverTimeStamp,
+          //~ hoverX, hoverY,
+          //~ hoverDomX, hoverDomY,
+          //~ hoverTimeStamp,
           clickX, clickY,
           clickDomX, clickDomY,
           clickTimeStamp,
           verticalCrosshair_X,
+          locationSelection,
           dataPoint_hoverSelection,
           inPlotXRangeSelection_StartX,inPlotXRangeSelection_EndX,
           onPlotXRangeSelection_StartX,onPlotXRangeSelection_EndX,
@@ -74,37 +86,45 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           // respiratory
           // data
           } = this.props;
+    let { hoverX,hoverY,
+          hoverDomX,hoverDomY,
+          hoverTimeStamp} = this.state;
     let { changeHandler } = this.props;
-    
     minX = minX-panningX;
     maxX = maxX-panningX;
-    
+
     return (
       <div style={{position:"relative", width:LEFT_WIDTH+PLOT_WIDTH, height:TOP_HEIGHT+PLOT_HEIGHT+BOTTOM_HEIGHT}}>
+        {/*<Timer callback={this.changeMinXY}/>*/}
         {/*Location plot*/}
         <div style={{position:"absolute",width:LEFT_WIDTH,height:TOP_HEIGHT}}>
-          <LocationPlot_YAxisTwoLevelPanel  className="RespPlotBundle-fillParent"
-                                            width={LEFT_WIDTH} height={TOP_HEIGHT}
-                                            />
+          <LocationPlotYAxisTwoLevelPanel className="RespPlotBundle-fillParent"
+                                          width={LEFT_WIDTH} height={TOP_HEIGHT}/>
         </div>
         <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT,left:LEFT_WIDTH}}>
+          <LocationPlotSelector data={location}
+                                minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                                hoverX={hoverX}
+                                selectHandler={this.locationPlot_selectHandler}
+                                />
           <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT/2,top:TOP_HEIGHT/4,backgroundColor:"#fff5e9"}}>
             <LocationPlot className="RespPlotBundle-fillParent"
-                          minX={minX} maxX={maxX} width={PLOT_WIDTH}
                           data={location}
+                          minX={minX} maxX={maxX} width={PLOT_WIDTH}
                           />
-            <LocationPlotHoverLabel className="RespPlotBundle-fillParent"
-                                    minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                    data={location} hoverX={hoverX}/>
+            <LocationPlotSelectionLabel className="RespPlotBundle-fillParent"
+                                        selection={locationSelection}
+                                        minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                                        />
           </div>
           <VerticalCrosshair className="RespPlotBundle-fillParent"
-                             hoverX={verticalCrosshair_X}
+                             X={verticalCrosshair_X}
                              minX={minX} maxX={maxX} width={PLOT_WIDTH}
                              />
           <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
-          <HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
+          {/*<HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
                                             minX={minX} maxX={maxX} width={PLOT_WIDTH}
                                             minY={1} maxY={0} height={TOP_HEIGHT}
                                             hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
@@ -116,20 +136,9 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                                                   selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
                                                   panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
                                                   >
-              <OnPlotXRangeSelection  className="RespPlotBundle-fillParent"
-                                      minX={minX} maxX={maxX} height={TOP_HEIGHT} width={PLOT_WIDTH}
-                                      startX={onPlotXRangeSelection_StartX+onPlotXRangeSelection_LeftDeltaX}
-                                      endX={onPlotXRangeSelection_EndX+onPlotXRangeSelection_RightDeltaX}
-                                      leftHandle={true} rightHandle={true} topHandle={true}
-                                      draggingLeftHandler={this.onPlotXRangeSelection_DraggingLeftHandler}
-                                      draggingMainHandler={this.onPlotXRangeSelection_DraggingMainHandler}
-                                      draggingRightHandler={this.onPlotXRangeSelection_DraggingRightHandler}
-                                      draggedLeftHandler={this.onPlotXRangeSelection_DraggedLeftHandler}
-                                      draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
-                                      draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
-                                      />
+
             </TriPhaseInteractionBoxWithReference>
-          </HoverInteractionBoxWithReference>
+          </HoverInteractionBoxWithReference>*/}
         </div>
         {/*End Location plot*/}
         {/*Y Axis*/}
@@ -137,14 +146,15 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           <RespiratoryScoreLimitsPanel  className="RespPlotBundle-fillParent"
                                         minY={minY} maxY={maxY} width={LEFT_WIDTH} height={PLOT_HEIGHT}
                                         />
-          <TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
+                                        
+          {/*<TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
                                                 minX={minX} maxX={maxX} width={PLOT_WIDTH}
                                                 minY={minY} maxY={maxY} height={PLOT_HEIGHT}
                                                 doubleClickHandler={this.plot_doubleClickHandler}
                                                 selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
                                                 panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
                                                 >
-          </TriPhaseInteractionBoxWithReference>
+          </TriPhaseInteractionBoxWithReference>*/}
         </div>
         {/*Respiratory plot area*/}
         <div style={{position:"absolute",width:PLOT_WIDTH,height:PLOT_HEIGHT,left:LEFT_WIDTH,top:TOP_HEIGHT,overflow:"hidden"}}>
@@ -162,27 +172,20 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                             />
           <ProcedurePlot  className="RespPlotBundle-fillParent"
                           data = {procedure}
-                          selection={procedurePlot_selection || procedurePlot_autoSelection}
-                          hoverX={hoverX}
                           minX={minX} maxX={maxX} width={PLOT_WIDTH} height={PLOT_HEIGHT}
                           />
           <SelectionPoint className="RespPlotBundle-fillParent"
-                          selection={dataPoint_hoverSelection}
+                          
                           minX={minX} maxX={maxX} width={PLOT_WIDTH}
                           minY={minY} maxY={maxY} height={PLOT_HEIGHT} 
                           />
           <VerticalCrosshair className="RespPlotBundle-fillParent"
-                             hoverX={verticalCrosshair_X}
+                             X={verticalCrosshair_X}
                              minX={minX} maxX={maxX} width={PLOT_WIDTH}
                              />
           <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
-          <HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
-                                                    minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                    minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                                    hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
-                                                    >
             <TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
                                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}
                                                   minY={minY} maxY={maxY} height={PLOT_HEIGHT}
@@ -191,25 +194,12 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                                                   selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
                                                   panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
                                                   >
-              <OnPlotXRangeSelection  className="RespPlotBundle-fillParent"
-                                      minX={minX} maxX={maxX} height={PLOT_HEIGHT} width={PLOT_WIDTH}
-                                      startX={onPlotXRangeSelection_StartX+onPlotXRangeSelection_LeftDeltaX}
-                                      endX={onPlotXRangeSelection_EndX+onPlotXRangeSelection_RightDeltaX}
-                                      leftHandle={true} rightHandle={true} topHandle={false}
-                                      draggingLeftHandler={this.onPlotXRangeSelection_DraggingLeftHandler}
-                                      draggingMainHandler={this.onPlotXRangeSelection_DraggingMainHandler}
-                                      draggingRightHandler={this.onPlotXRangeSelection_DraggingRightHandler}
-                                      draggedLeftHandler={this.onPlotXRangeSelection_DraggedLeftHandler}
-                                      draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
-                                      draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
-                                      />
             </TriPhaseInteractionBoxWithReference>
-          </HoverInteractionBoxWithReference>
         </div>
         {/*End Respiratory plot area*/}
         {/*X Axis*/}
         <div style={{position:"absolute",width:PLOT_WIDTH,height:BOTTOM_HEIGHT,left:LEFT_WIDTH,top:PLOT_HEIGHT+TOP_HEIGHT}}>
-          <XAxis_Date className="RespPlotBundle-fillParent"
+          <XAxisDate className="RespPlotBundle-fillParent"
                       minX={minX} maxX={maxX} height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
                      />
           <HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
@@ -230,6 +220,36 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
         {/*End X Axis*/}
       </div>
     );
+  }
+
+  changeMinXY = ()=>{
+    let {changeHandler} = this.props;
+    let {minX,minY,maxX,maxY} = this.props;
+    if (minX>=1508858000){
+      this.incrementX = -100000;
+    }
+    if (minX<= 1482858000){
+      this.incrementX = 100000;
+    }
+    if (!this.incrementY) {
+      this.incrementY = 1;
+    }
+    if (minY>=10){
+      this.incrementY = -1;
+    }
+    if (minY<=-10){
+      this.incrementY = 1;
+    }
+    changeHandler({ minX:minX+this.incrementX,
+                    maxX:maxX+this.incrementX,
+                    minY:minY+this.incrementY,
+                    maxY:maxY+this.incrementY});
+  }
+  
+  locationPlot_selectHandler = (selection)=> {
+    let {changeHandler} = this.props;
+    changeHandler({ locationSelection:selection,
+                    });
   }
   
   plot_clickedHandler = ({dataX,dataY,domX,domY,timestamp}) => {
@@ -403,6 +423,7 @@ const mapStateToProps = function (state,ownProps) {
     doubleClickDomX: state.plot.doubleClickDomX || null,
     doubleClickDomY: state.plot.doubleClickDomY || null,
     doubleClickTimeStamp: state.plot.doubleClickTimeStamp || null,
+    locationSelection: state.plot.locationSelection || null,
     verticalCrosshair_X: state.plot.verticalCrosshair_X || null,
     dataPoint_hoverSelection: state.plot.dataPoint_hoverSelection || null,
     inPlotXRangeSelection_StartX: state.plot.inPlotXRangeSelection_StartX || null,

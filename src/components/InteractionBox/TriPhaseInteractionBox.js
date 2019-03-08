@@ -1,6 +1,14 @@
 import React, { PureComponent } from 'react';
 import "./TriPhaseInteractionBox.css";
 
+const OVERLAY_CLASS_LUT = { "hovering": "TriPhaseInteractionBox-hiddenOverlay",
+                            "clicking": "TriPhaseInteractionBox-hiddenOverlay",
+                            "double-clicking": "TriPhaseInteractionBox-hiddenOverlay",
+                            "selecting": "TriPhaseInteractionBox-selectingOverlay",
+                            "auto-selecting": "TriPhaseInteractionBox-selectingOverlay",
+                            "panning": "TriPhaseInteractionBox-panningOverlay"
+                            };
+
 class TriPhaseInteractionBox extends PureComponent {
   constructor(props){
     super(props);
@@ -25,13 +33,12 @@ class TriPhaseInteractionBox extends PureComponent {
       <div ref={this.ref} onMouseDown={this.handleMouseDown}
                           {...rest}>
         {children}
-        <div  className={this.determineOverlayClass(mode)}></div>
+        <div className={OVERLAY_CLASS_LUT[mode]}></div>
       </div>
     );
   }
   
   componentDidMount() {
-    console.log('!@#!');
     document.addEventListener("mousemove",this.handleDocumentMouseMove);
     document.addEventListener("mouseup",this.handleDocumentMouseUp);
   }
@@ -101,14 +108,14 @@ class TriPhaseInteractionBox extends PureComponent {
         if (!clickedHandler) {
           break;
         }
-        clickedHandler({domX:startDomX,domY:startDomY,timestamp});
+        //~ clickedHandler({domX:startDomX,domY:startDomY,timestamp});
         break;
       case "double-clicking":
         let {doubleClickHandler} = this.props;
         if (!doubleClickHandler) {
           break;
         }
-        doubleClickHandler({domX:startDomX,domY:startDomY,timestamp});
+        //~ doubleClickHandler({domX:startDomX,domY:startDomY,timestamp});
         break;
       case "auto-selecting":
         //pass

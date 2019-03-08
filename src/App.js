@@ -1,13 +1,15 @@
 import React, { Component } from "react";
-import RespPlotBundleConnector from "./connectors/RPlotConnector";
-//import MedicationRecordBundleConnector from "./connectors/MedicationRecordBundleConnector";
+import RespPlot from "./connectors/RPlotConnector";
+import MedicationRecordBundleConnector from "./connectors/MedicationRecordBundleConnector";
+import Test from "./connectors/Test";
 
 class App extends Component {
   render() {
     return (
       <>
-        <RespPlotBundleConnector />
-        {/* <MedicationRecordBundleConnector /> */}
+        {/*<RespPlot width={1000} height={400}/>*/}
+        {/*<MedicationRecordBundleConnector width={1000}/>*/}
+        <Test />
       </>
     );
   }

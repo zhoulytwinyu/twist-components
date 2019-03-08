@@ -8,11 +8,18 @@ class YAxisTwoLevelPanel extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
+    this.memo = {};
+    this.memo.
   }
 
   render() {
-    let { primaryCategories, /* [{bitmap,start,end,color}] */
-          secondaryCategories , /* [{bitmap,start,end,color}] */
+    let { bitmaps,
+          Xs,
+          Ys,
+          width,
+          height,
+          minX,maxX,
+          minY,maxY,
           height, width,
           ...rest} = this.props;
     return (
