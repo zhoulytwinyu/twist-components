@@ -49,22 +49,6 @@ class TriPhaseInteractionBox extends PureComponent {
     document.removeEventListener("mouseup",this.handleDocumentMouseUp);
   }
   
-  determineOverlayClass(mode) {
-    switch (mode){
-      case "hovering":
-      case "clicking":
-      case "double-clicking":
-        return "TriPhaseInteractionBox-hiddenOverlay";
-      case "selecting":
-      case "auto-selecting":
-        return "TriPhaseInteractionBox-selectingOverlay";
-      case "panning":
-        return "TriPhaseInteractionBox-panningOverlay";
-      default:
-        return null;
-    }
-  }
-  
   handleMouseDown = (ev) => {
     ev.preventDefault();
     ev.stopPropagation();

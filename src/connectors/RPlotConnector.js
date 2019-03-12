@@ -17,10 +17,8 @@ import ProcedurePlot, {ProcedurePlotAddon} from "../components/ProcedurePlot";
 //import ProcedurePlotClickSelectionAddon from "../components/ProcedurePlotClickSelectionAddon";
 import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection";
 import VerticalCrosshair from "../components/VerticalCrosshair";
-import HoverInteractionBoxWithReference from "../components/InteractionBox/HoverInteractionBoxWithReference";
 import SelectionPoint from "../components/SelectionPoint";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
-import TriPhaseInteractionBoxWithReference from "../components/InteractionBox/TriPhaseInteractionBoxWithReference";
 import RespiratoryScoreLimitsPanel from "../components/RespiratoryScoreLimitsPanel";
 
 import "./RespPlotBundle.css";
@@ -52,10 +50,19 @@ const TOP_HEIGHT=50;
 const PLOT_HEIGHT=100;
 const BOTTOM_HEIGHT=50;
 
-const EMPTY_ARRAY=[];
-const ssss = {position:"absolute",width:1000,height:100};
 
-class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
+class VerticalCrossHairController extends PureComponent{
+  render(){
+    return null;
+  }
+
+  componentDidUpdate() {
+    let {hoverX,updateHandler} = this.props;
+    updateHandler({verticalCrosshair_X:hoverX});
+  }
+}
+
+class RespPlotBundle extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {hoverX:null,hoverY:null,
@@ -63,8 +70,10 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
                   hoverTimeStamp:null,
                   };
     this.setState = this.setState.bind(this);
+    this.HoverInteractionContext = React.createContext();
   }
   render() {
+    console.log("render");
     let { minX,maxX,
           minY,maxY,
           panningX,
@@ -86,9 +95,11 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           // respiratory
           // data
           } = this.props;
+    
     let { hoverX,hoverY,
           hoverDomX,hoverDomY,
           hoverTimeStamp} = this.state;
+    let {HoverInteractionContext} = this;
     let { changeHandler } = this.props;
     minX = minX-panningX;
     maxX = maxX-panningX;
@@ -124,21 +135,6 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
-          {/*<HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
-                                            minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                            minY={1} maxY={0} height={TOP_HEIGHT}
-                                            hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
-                                            >
-            <TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
-                                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                  minY={1} maxY={0} height={TOP_HEIGHT}
-                                                  doubleClickHandler={console.log}
-                                                  selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
-                                                  panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
-                                                  >
-
-            </TriPhaseInteractionBoxWithReference>
-          </HoverInteractionBoxWithReference>*/}
         </div>
         {/*End Location plot*/}
         {/*Y Axis*/}
@@ -146,15 +142,6 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           <RespiratoryScoreLimitsPanel  className="RespPlotBundle-fillParent"
                                         minY={minY} maxY={maxY} width={LEFT_WIDTH} height={PLOT_HEIGHT}
                                         />
-                                        
-          {/*<TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
-                                                minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                                doubleClickHandler={this.plot_doubleClickHandler}
-                                                selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
-                                                panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
-                                                >
-          </TriPhaseInteractionBoxWithReference>*/}
         </div>
         {/*Respiratory plot area*/}
         <div style={{position:"absolute",width:PLOT_WIDTH,height:PLOT_HEIGHT,left:LEFT_WIDTH,top:TOP_HEIGHT,overflow:"hidden"}}>
@@ -186,15 +173,6 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
-            <TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
-                                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                  minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                                  clickedHandler={this.plot_clickedHandler}
-                                                  doubleClickHandler={this.plot_doubleClickHandler}
-                                                  selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
-                                                  panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
-                                                  >
-            </TriPhaseInteractionBoxWithReference>
         </div>
         {/*End Respiratory plot area*/}
         {/*X Axis*/}
@@ -202,20 +180,6 @@ class RespPlotBundle extends PureComponent {SECONDARY_CATEGORIES
           <XAxisDate className="RespPlotBundle-fillParent"
                       minX={minX} maxX={maxX} height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
                      />
-          <HoverInteractionBoxWithReference className="RespPlotBundle-fillParent"
-                                                    minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                    minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                                    hoveringHandler={this.plot_hoveringHandler} mouseOutHandler={this.plot_mouseOutHandler}
-                                                    >
-            <TriPhaseInteractionBoxWithReference  className="RespPlotBundle-fillParent"
-                                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                                  minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                                  doubleClickHandler={this.plot_doubleClickHandler}
-                                                  selectingHandler={this.plot_selectingHandler} selectedHandler={this.plot_selectedHandler}
-                                                  panningHandler={this.plot_panningHandler} pannedHandler={this.plot_pannedHandler}
-                                                  >
-            </TriPhaseInteractionBoxWithReference>
-          </HoverInteractionBoxWithReference>
         </div>
         {/*End X Axis*/}
       </div>

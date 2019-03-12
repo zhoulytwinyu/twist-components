@@ -1,10 +1,10 @@
 import React, { PureComponent } from 'react';
-import YAxisTwoLevelPanel from "./YAxisTwoLevelPanel";
+import YAxisTwoLevelPanel from "../YAxisTwoLevelPanel";
 
 const PRIMARY_COLOR_CYCLE = ["cyan","blue","green"];
 const SECONDARY_COLOR_CYCLE = ["yellow","beige"];
 
-class MedicationRecordYAxisTwoLevelPanel extends PureComponent{
+class MedicationRecordsDynamicYAxisTwoLevelPanel extends PureComponent{
   constructor(props){
     super(props);
     this.memo={};
@@ -12,7 +12,7 @@ class MedicationRecordYAxisTwoLevelPanel extends PureComponent{
   render(){
     let { categoryStructure, /* [{name,children:[...]}] */
           useMedications, /* Set */
-          rowHeight, height, width,
+          rowHeight, width, height,
           ...rest} = this.props;
     let {memo} = this;
     if (memo.categoryStructure !== categoryStructure) {
@@ -79,4 +79,4 @@ class MedicationRecordYAxisTwoLevelPanel extends PureComponent{
   }
 }
 
-export default MedicationRecordYAxisTwoLevelPanel;
+export default MedicationRecordsDynamicYAxisTwoLevelPanel;

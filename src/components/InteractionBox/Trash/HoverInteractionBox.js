@@ -9,7 +9,7 @@ class HoverInteractionBox extends PureComponent {
   }
   
   render(){
-    let {children,hoveringHandler,hoverEndHandler,
+    let {children,hoveringHandler,mouseOutHandler,
           minX,maxX,width,
           minY,maxY,height,
           ...rest} = this.props;

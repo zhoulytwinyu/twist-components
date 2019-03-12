@@ -19,12 +19,12 @@ class TriPhaseInteractionBoxWithReference extends PureComponent {
           panningHandler,pannedHandler,
           ...rest} = this.props;
     return (
-      <TriPhaseInteractionBox  {...rest}
-                                clickedHandler={this.clickedHandler}
-                                doubleClickHandler={this.doubleClickHandler}
-                                selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
-                                panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
-                                >
+      <TriPhaseInteractionBox {...rest}
+                              clickedHandler={this.clickedHandler}
+                              doubleClickHandler={this.doubleClickHandler}
+                              selectingHandler={this.selectingHandler} selectedHandler={this.selectedHandler}
+                              panningHandler={this.panningHandler} pannedHandler={this.pannedHandler}
+                              >
         {children}
       </TriPhaseInteractionBox>
     );

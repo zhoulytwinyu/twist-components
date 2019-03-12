@@ -1,75 +1,22 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from "react";
+import {memoize_one} from "memoize";
 
-const REDS = ["#000000",,"#110000","#220000","#330000",
-              "#440000",,"#550000","#660000","#770000",
-              "#880000",,"#990000","#aa0000","#bb0000",
-              "#cc0000","#dd0000","#ee0000","#ff00000"
-              ];
-
-class MedicationRecordModifier extends PureComponent {
-  constructor(props){
-    super(props);
-    this.memo = {};
-  }
-
+class MedicationRecordsDynamicGroupingProvider extends Component {
   render() {
-    return null;
-  }
-  
-  componentDidMount(){
-    this.update();
-  }
-
-  componentDidUpdate(){
-    this.update();
-  }
-  
-  update() {
-    let { minX,maxX,
-          rowHeight,
-          medicationRecords, /* [{name,start,end,dose,type,score}] */
-          categoryStructure /* [ {name,children:[{name}]} ]*/
+    let { render,
+          medicationRecords,categoryStructure,
+          minX,maxX,
+          rowHeight
           } = this.props;
-    let {memo} = this;
-
-    if (memo.categoryStructure!==categoryStructure ||
-        memo.medicationRecords!==medicationRecords) {
-      if (memo.categoryStructure!==categoryStructure) {
-        memo.categoryStructure = categoryStructure;
-        memo.includeMedications = new Set(categoryStructure.map(({children})=>children)
-                                                            .flat()
-                                                            .map(({name})=>name)
-                                          );
-      }
-      if (memo.medicationRecords!==medicationRecords) {
-        memo.medicationRecords = medicationRecords;
-      }
-      memo.filteredMedicationRecords_ByName = {};
-      for (let med of memo.includeMedications) {
-        memo.filteredMedicationRecords_ByName[med] = medicationRecords.filter( ({name})=>med===name ).sort( (a,b)=> a.start-b.start );
-      }
-    }
-    
-    let filteredMedicationRecords = Object.values(memo.filteredMedicationRecords_ByName)
-                                          .flat()
-                                          .filter( ({start,end})=> !(start<minX || maxX<start) );
-    let useMedications = new Set(filteredMedicationRecords.map( ({name})=>name ));
-    let rowCount = categoryStructure.map(({children})=>children)
-                                    .flat()
-                                    .map(({name})=>name)
-                                    .filter( (x)=>useMedications.has(x) )
-                                    .length;
-    let height = rowCount*rowHeight;
-    
-    this.handleUpdate(height,useMedications,filteredMedicationRecords);
+    let groupedMedicationRecords = this.getGroupedMedicationRecords(medicationRecords,categoryStructure);
+    let useMedications = this.getUseMedicationsInRange(groupedMedicationRecords,minX,maxX);
+    let height = this.getRequiredHeight(useMedications,categoryStructure,rowHeight);
+    return  (
+      render(groupedMedicationRecords,useMedications,height)
+    );
   }
 
-  handleUpdate(height,useMedications,modifiedMedicationRecords) {
-    let { updateHandler} = this.props;
-    updateHandler({height,useMedications,modifiedMedicationRecords});
-  }
-
-  getGroupedMedicationRecords(medicationRecords,categoryStructure) {
+  getGroupedMedicationRecords = memoize_one((medicationRecords,categoryStructure)=>{
     let includeMedications = new Set(categoryStructure.map(({children})=>children)
                                                       .flat()
                                                       .map(({name})=>name)
@@ -92,7 +39,7 @@ class MedicationRecordModifier extends PureComponent {
                                                                   else return a.end-b.end;
                                                                   })
     return medicationRecords_FilteredGrouped;
-  }
+  });
 
   getGroupedMedicationRecords_helper(records) {
     if (records.length===0) {
@@ -112,7 +59,6 @@ class MedicationRecordModifier extends PureComponent {
                                               validTo:Infinity})
                                               );
     for (let i=0; i<64; i++) {
-      console.log(i,curRecords);
       if (curRecords.length===1) {
         let lastRecord = curRecords[0];
         retRecords.push(lastRecord);
@@ -181,6 +127,46 @@ class MedicationRecordModifier extends PureComponent {
     }
     return ret;
   }
+
+  getUseMedicationsInRange(medicationRecords,minX,maxX){
+    let filteredMedicationRecords = medicationRecords.filter( ({start,end,validFrom,validTo}) =>
+                                                                          ( !(end<minX || start>maxX) &&
+                                                                            maxX-minX<validTo &&
+                                                                            maxX-minX>=validFrom
+                                                                            )
+                                                          );
+    let useMedications = new Set(filteredMedicationRecords.map(({name})=>name));
+    // Memoization: return same Set if possible.
+    this.getMedicationRecordsInRange_memo = this.getMedicationRecordsInRange_memo || {};
+    let memo = this.getMedicationRecordsInRange_memo;
+    memo.useMedications = memo.useMedications || new Set();
+    if (!this.setEqual(memo.useMedications,useMedications)) {
+      memo.useMedications = useMedications;
+    } 
+    return memo.useMedications;
+  }
+
+  getRequiredHeight = memoize_one((useMedications,categoryStructure,rowHeight)=>{
+    let rowNum = categoryStructure.map(({children})=>children)
+                                  .flat()
+                                  .map(({name})=>name)
+                                  .filter(name=>useMedications.has(name))
+                                  .length;
+    let height =  rowNum*rowHeight;
+    return height;
+  });
+  
+  setEqual(set1,set2) {
+    if (set1.size !== set2.size){
+      return false;
+    }
+    for (let i of set1) {
+      if (!set2.has(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
-export default MedicationRecordModifier;
+export default MedicationRecordsDynamicGroupingProvider;

@@ -16,15 +16,15 @@ class HoverInteractionBoxWithReference extends PureComponent {
           ...rest} = this.props;
     return (
       <HoverInteractionBox  {...rest}
-                            hoveringHandler={this.hoveringHandler}
-                            mouseOutHandler={this.mouseOutHandler}
+                            hoveringHandler={this.handleHovering}
+                            mouseOutHandler={this.handleMouseOut}
                             >
         {children}
       </HoverInteractionBox>
     );
   }
   
-  hoveringHandler = ({domX,domY,timestamp}) => {
+  handleHovering = ({domX,domY,timestamp}) => {
     let {hoveringHandler} = this.props;
     if (!hoveringHandler){
       return;
@@ -34,7 +34,7 @@ class HoverInteractionBoxWithReference extends PureComponent {
     hoveringHandler({dataX,dataY,domX,domY,timestamp});
   }
   
-  mouseOutHandler = ({domX,domY,timestamp}) => {
+  handleMouseOut = ({domX,domY,timestamp}) => {
     let {mouseOutHandler} = this.props;
     if (!mouseOutHandler){
       return;
