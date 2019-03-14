@@ -24,8 +24,7 @@ class XAxis extends PureComponent {
   }
   
   draw() {
-    let { width,
-          height,
+    let { width,height,
           Xs,bitmaps,positions} = this.props;
     // Plot
     let canvas = this.ref.current;
@@ -33,21 +32,6 @@ class XAxis extends PureComponent {
     ctx.clearRect(0,0,width,height);
     this.bitmapPlot(ctx,width,height,Xs,bitmaps,positions);
     this.ticPlot(ctx,width,height,Xs);
-  }
-  
-  createTextBitmaps(text) {
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-    ctx.font = "10px Sans";
-    let width = ctx.measureText(text).width;
-    let height = 10;
-    canvas.width = width;
-    canvas.height = height;
-    ctx.font = "10px Sans";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text,width/2,height/2);
-    return canvas;
   }
   
   bitmapPlot(ctx,width,height,domXs,bitmaps,positions){

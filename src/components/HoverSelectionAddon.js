@@ -2,7 +2,6 @@ import { PureComponent } from 'react';
 import {memoize_one} from "memoize";
 import {bisect_left,
         bisect_right} from "bisect";
-import {rowIndexedToColumnIndexed} from "plot-utils";
 
 class HoverSelectionAddon extends PureComponent {
   constructor(props){
@@ -113,10 +112,6 @@ class HoverSelectionAddon extends PureComponent {
       selectHandler({selection});
     }
   }
-  
-  columnIndex = memoize_one((data) => {
-    return rowIndexedToColumnIndexed(data,["time"]);
-  });
 }
 
 export default HoverSelectionAddon;

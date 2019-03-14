@@ -1,28 +1,27 @@
 import React, { PureComponent } from "react";
 import { connect } from "react-redux";
-import { memoize_one } from "memoize";
 import { changeTopLevelPlot } from "../actions/plot-actions";
 // Import components
-import Timer from "../components/Timer";
-import HoverSelectionAddon from "../components/HoverSelectionAddon";
-import XAxisDate from "../components/XAxisDate";
-import VerticalGrid_Date from "../components/VerticalGrid_Date";
-import RespiratoryScoreLimitSlabGrid from "../components/RespiratoryScoreLimitSlabGrid";
-import RespiratoryPlot from "../components/RespiratoryPlot";
-import LocationPlot from "../components/LocationPlot";
+import RespiratoryScoresLimitsPanel from "../components/RespiratoryScoresPlot/RespiratoryScoreLimitsPanel";
+import RespiratoryScoresPlotHorizontalSlabGrid from "../components/RespiratoryScoresPlot/RespiratoryScoresPlotHorizontalSlabGrid";
+import RespiratoryScoresPlot from "../components/RespiratoryScoresPlot/RespiratoryScoresPlot";
+import LocationPlot from "../components/LocationsPlot/LocationsPlot";
 import LocationPlotYAxisTwoLevelPanel from "../components/LocationPlotYAxisTwoLevelPanel";
-import LocationPlotSelector from "../components/LocationPlotSelector";
 import LocationPlotSelectionLabel from "../components/LocationPlotSelectionLabel";
-import ProcedurePlot, {ProcedurePlotAddon} from "../components/ProcedurePlot";
-//import ProcedurePlotClickSelectionAddon from "../components/ProcedurePlotClickSelectionAddon";
-import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection";
+import ProceduresPlot from "../components/ProceduresPlot/ProceduresPlot";
+import ProceduresPlotClickSelector from "../components/ProceduresPlot/ProceduresPlotClickSelector";
+import PlotInteractionBoxProvider from "../components/Interaction/PlotInteractionBoxProvider";
+//
+import DynamicDateYAxisTwoLevelPanel from "../components/DateXAxis/DynamicDateYAxisTwoLevelPanel";
+import DateXAxis from "../components/DateXAxis/DateXAxis";
+import DateVerticalGridLines from "../components/DateXAxis/DateVerticalGridLines";
 import VerticalCrosshair from "../components/VerticalCrosshair";
 import SelectionPoint from "../components/SelectionPoint";
 import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
-import RespiratoryScoreLimitsPanel from "../components/RespiratoryScoreLimitsPanel";
 
 import "./RespPlotBundle.css";
 
+// Fake data
 import respiratoryScore from "./test-data/respiratoryScore";
 import iNO from "./test-data/iNO";
 import anesthetics from "./test-data/anesthetics";
@@ -30,8 +29,6 @@ import respiratoryScoreLimits from "./test-data/respiratoryScoreLimits";
 import location from "./test-data/location";
 import procedure from "./test-data/procedure";
 import {plot1x,plot1ys} from "./test-data/plot1";
-
-
 
 let selectionData = [];
 for (let i=0; i<plot1x.length; i++) {
@@ -47,20 +44,8 @@ const LEFT_WIDTH=150;
 const PLOT_WIDTH=1000;
 
 const TOP_HEIGHT=50;
-const PLOT_HEIGHT=100;
-const BOTTOM_HEIGHT=50;
-
-
-class VerticalCrossHairController extends PureComponent{
-  render(){
-    return null;
-  }
-
-  componentDidUpdate() {
-    let {hoverX,updateHandler} = this.props;
-    updateHandler({verticalCrosshair_X:hoverX});
-  }
-}
+const PLOT_HEIGHT=300;
+const BOTTOM_HEIGHT=30;
 
 class RespPlotBundle extends PureComponent {
   constructor(props) {
@@ -70,16 +55,11 @@ class RespPlotBundle extends PureComponent {
                   hoverTimeStamp:null,
                   };
     this.setState = this.setState.bind(this);
-    this.HoverInteractionContext = React.createContext();
   }
   render() {
-    console.log("render");
     let { minX,maxX,
           minY,maxY,
           panningX,
-          //~ hoverX, hoverY,
-          //~ hoverDomX, hoverDomY,
-          //~ hoverTimeStamp,
           clickX, clickY,
           clickDomX, clickDomY,
           clickTimeStamp,
@@ -99,26 +79,21 @@ class RespPlotBundle extends PureComponent {
     let { hoverX,hoverY,
           hoverDomX,hoverDomY,
           hoverTimeStamp} = this.state;
-    let {HoverInteractionContext} = this;
     let { changeHandler } = this.props;
     minX = minX-panningX;
     maxX = maxX-panningX;
 
     return (
       <div style={{position:"relative", width:LEFT_WIDTH+PLOT_WIDTH, height:TOP_HEIGHT+PLOT_HEIGHT+BOTTOM_HEIGHT}}>
-        {/*<Timer callback={this.changeMinXY}/>*/}
-        {/*Location plot*/}
+        {/*  Location Plot  */}
+        {/*Row 0 Col 0: Location Plot Y Axis*/}
         <div style={{position:"absolute",width:LEFT_WIDTH,height:TOP_HEIGHT}}>
           <LocationPlotYAxisTwoLevelPanel className="RespPlotBundle-fillParent"
                                           width={LEFT_WIDTH} height={TOP_HEIGHT}/>
         </div>
-        <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT,left:LEFT_WIDTH}}>
-          <LocationPlotSelector data={location}
-                                minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                hoverX={hoverX}
-                                selectHandler={this.locationPlot_selectHandler}
-                                />
-          <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT/2,top:TOP_HEIGHT/4,backgroundColor:"#fff5e9"}}>
+        {/*Row 0 Col 1: Location Plot*/}
+        <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT,left:LEFT_WIDTH,backgroundColor:"#fff5e9"}}>
+          <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT/2,top:TOP_HEIGHT/4,backgroundColor:"lightgrey"}}>
             <LocationPlot className="RespPlotBundle-fillParent"
                           data={location}
                           minX={minX} maxX={maxX} width={PLOT_WIDTH}
@@ -136,33 +111,31 @@ class RespPlotBundle extends PureComponent {
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
         </div>
-        {/*End Location plot*/}
-        {/*Y Axis*/}
+        {/*  End Location Plot  */}
+        {/*Row 1 Col 0: Respiratory Plot Y Axis*/}
         <div style={{position:"absolute",width:LEFT_WIDTH,height:PLOT_HEIGHT,top:TOP_HEIGHT}}>
-          <RespiratoryScoreLimitsPanel  className="RespPlotBundle-fillParent"
+          <RespiratoryScoresLimitsPanel className="RespPlotBundle-fillParent"
                                         minY={minY} maxY={maxY} width={LEFT_WIDTH} height={PLOT_HEIGHT}
                                         />
         </div>
-        {/*Respiratory plot area*/}
+        {/*Row 1 Col 1: Respiratory Plot*/}
         <div style={{position:"absolute",width:PLOT_WIDTH,height:PLOT_HEIGHT,left:LEFT_WIDTH,top:TOP_HEIGHT,overflow:"hidden"}}>
-          <RespiratoryScoreLimitSlabGrid  className="RespPlotBundle-fillParent"
-                                          data={respiratoryScoreLimits}
-                                          minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                                          />
-          <VerticalGrid_Date  className="RespPlotBundle-fillParent RespPlotBundle-opacity25"
-                              minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                              />
-          <RespiratoryPlot  className="RespPlotBundle-fillParent"
-                            respiratoryScores={respiratoryScore} iNO={iNO} anesthetics={anesthetics}
-                            minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                            minY={minY} maxY={maxY} height={PLOT_HEIGHT}
-                            />
-          <ProcedurePlot  className="RespPlotBundle-fillParent"
+          <RespiratoryScoresPlotHorizontalSlabGrid  className="RespPlotBundle-fillParent"
+                                                    minY={minY} maxY={maxY} height={PLOT_HEIGHT}
+                                                    />
+          <DateVerticalGridLines  className="RespPlotBundle-fillParent"
+                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                                  />
+          <RespiratoryScoresPlot  className="RespPlotBundle-fillParent"
+                                  respiratoryScores={respiratoryScore} iNO={iNO} anesthetics={anesthetics}
+                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                                  minY={minY} maxY={maxY} height={PLOT_HEIGHT}
+                                  />
+          <ProceduresPlot className="RespPlotBundle-fillParent"
                           data = {procedure}
                           minX={minX} maxX={maxX} width={PLOT_WIDTH} height={PLOT_HEIGHT}
                           />
           <SelectionPoint className="RespPlotBundle-fillParent"
-                          
                           minX={minX} maxX={maxX} width={PLOT_WIDTH}
                           minY={minY} maxY={maxY} height={PLOT_HEIGHT} 
                           />
@@ -173,15 +146,38 @@ class RespPlotBundle extends PureComponent {
           <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
                                   minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
+          // Main plot area interaction
+          <PlotInteractionBoxProvider className="RespPlotBundle-fillParent"
+                                      render={({hoveringEvent,hoverEndEvent,
+                                                clickEvent,doubleClickEvent,
+                                                selectingEventStart,selectingEventEnd,
+                                                selectedEventStart,selectedEventEnd,
+                                                panningEventStart,panningEventEnd,
+                                                pannedEventStart,pannedEventEnd})=>
+            <>
+              <ProceduresPlotClickSelector  data = {procedure}
+                                            minX={minX} maxX={maxX}
+                                            width={PLOT_WIDTH} height={PLOT_HEIGHT}
+                                            clickEvent={clickEvent}
+                                            />
+            </>
+          }/>
         </div>
-        {/*End Respiratory plot area*/}
-        {/*X Axis*/}
+        {/*  End Respiratory Plot  */}
+        {/*  X Axis  */}
+        <div style={{position:"absolute",width:LEFT_WIDTH,height:BOTTOM_HEIGHT,left:0,top:PLOT_HEIGHT+TOP_HEIGHT}}>
+          <DynamicDateYAxisTwoLevelPanel  className="RespPlotBundle-fillParent"
+                                          minX={minX} maxX={maxX}
+                                          width={LEFT_WIDTH} height={BOTTOM_HEIGHT}
+                                          />
+        </div>
         <div style={{position:"absolute",width:PLOT_WIDTH,height:BOTTOM_HEIGHT,left:LEFT_WIDTH,top:PLOT_HEIGHT+TOP_HEIGHT}}>
-          <XAxisDate className="RespPlotBundle-fillParent"
-                      minX={minX} maxX={maxX} height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
-                     />
+          <DateXAxis  className="RespPlotBundle-fillParent"
+                      minX={minX} maxX={maxX}
+                      height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
+                      />
         </div>
-        {/*End X Axis*/}
+        {/*  End X Axis  */}
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
 
-class VerticalGrid_Line extends PureComponent {
+class VerticalGridLine extends PureComponent {
   constructor(props) {
     super(props);
     this.ref= React.createRef();
@@ -47,4 +47,4 @@ class VerticalGrid_Line extends PureComponent {
   }
 }
 
-export default VerticalGrid_Line;
+export default VerticalGridLine;

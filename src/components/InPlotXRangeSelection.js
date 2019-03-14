@@ -1,8 +1,5 @@
 import React, { PureComponent } from 'react';
 import {toDomXCoord_Linear} from "plot-utils";
-import VerticalSlabGrid from "./Basics/VerticalSlabGrid";
-
-const COLOR = "rgba(100,100,100,0.3)";
 
 class InPlotXRangeSelection extends PureComponent {
   constructor(props){
@@ -39,14 +36,12 @@ class InPlotXRangeSelection extends PureComponent {
         endX === undefined || endX === null ) {
       return;
     }
-    let {memo} = this;
     // Coord
     let startDomX= Math.max(0,toDomXCoord_Linear(width,minX,maxX,startX));
     let endDomX = Math.min(width,toDomXCoord_Linear(width,minX,maxX,endX));
     // Draw
     ctx.globalAlpha=0.2;
     ctx.fillRect(startDomX,0,endDomX-startDomX,1);
-    memo.clean=false;
   }
 }
 

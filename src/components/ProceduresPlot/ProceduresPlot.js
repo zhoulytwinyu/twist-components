@@ -1,27 +1,15 @@
 import React, { PureComponent } from 'react';
 import {bisect_left,bisect_right} from "bisect";
-import {toDomXCoord_Linear,
-        bisectFilterDataRange_columnsIndexed} from "plot-utils";
-import {LABEL_DOMY,LABEL_DOMX_OFFSET,LABEL_WIDTH,LABEL_FONT} from "./ProcedurePlott/ProcedurePlotConstants";
+import {toDomXCoord_Linear} from "plot-utils";
+// Import constants
+import {DISPLAY_SHORT_NAME_LUT,DISPLAY_STYLE_LUT} from "./ProceduresPlotContants";
 
-const DISPLAY_SHORT_NAME_LUT = {"HLHS STAGE I, CARDIAC":"S1P",
-                                "CHEST CLOSURE, CARDIAC OFF UNIT":"VAC ∆",
-                                "GASTROSTOMY, LAPAROSCOPIC, GENSURG":"Hip osteoplasty",
-                                "VESICOSTOMY CREATION/CLOSURE, GU":"GI",
-                                "BIDIRECTIONAL GLEN SHUNT, CARDIAC":"GI"
-                                };
-
-const DISPLAY_STYLE_LUT = {"HLHS STAGE I, CARDIAC":0,
-                            "CHEST CLOSURE, CARDIAC OFF UNIT":2,
-                            "GASTROSTOMY, LAPAROSCOPIC, GENSURG":0,
-                            "VESICOSTOMY CREATION/CLOSURE, GU":2,
-                            "BIDIRECTIONAL GLEN SHUNT, CARDIAC":1
-                            };
-
-class ProcedurePlot extends PureComponent {
+class ProceduresPlot extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
+    this.memo = {};
+    this.memo.data = null;
   }
 
   render() {
@@ -69,55 +57,71 @@ class ProcedurePlot extends PureComponent {
     ctx.globalAlpha = 1;
     ctx.clearRect(0,0,width,height);
     // Plot
-    this.plotProcedureTexts(ctx,width,height,bitmaps,startDomXs);
     ctx.globalAlpha = 0.3;
-    this.plotProcedureLines(ctx,width,height,startDomXs,endDomXs,styles);
+    this.plotProcedures(ctx,width,height,startDomXs,endDomXs,bitmaps,styles);
   }
   
-  plotProcedureTexts(ctx,width,height,bitmaps,startDomXs) {
-    for (let i=0; i<bitmaps.length; i++){
-      let bitmap = bitmaps[i];
-      let domStartX = startDomXs[i];
-      ctx.drawImage(bitmap,domStartX-bitmap.width-5,5);
-    }
-  }
-  
-  plotProcedureLines(ctx,width,height,startDomXs,endDomXs,styles) {
-    let linePlotter = { 0:this.plotLine_style0,
-                        1:this.plotLine_style1,
-                        2:this.plotLine_style2
-                        };
+  plotProcedures(ctx,width,height,startDomXs,endDomXs,bitmaps,styles) {
     for (let i=0; i<startDomXs.length; i++){
       let startDomX = startDomXs[i];
       let endDomX = endDomXs[i];
+      let bitmap = bitmaps[i];
       let style = styles[i];
-      linePlotter[style](ctx,width,height,startDomX,endDomX);
+      // Draw label
+      ctx.drawImage(bitmap,startDomX-bitmap.width-5,5);
+      // Draw line
+      this.drawProcedureLine(ctx,width,height,startDomX,endDomX,style);
+    }
+  }
+  
+  drawProcedureLine(ctx,width,height,startDomX,endDomX,style) {
+    switch (style) {
+      case 0:
+      default:
+        this.plotLine_style0(ctx,width,height,startDomX,endDomX);
+        break;
+      case 1:
+        this.plotLine_style1(ctx,width,height,startDomX,endDomX);
+        break;
+      case 2:
+        this.plotLine_style2(ctx,width,height,startDomX,endDomX);
+        break;
     }
   }
   
   createTextBitmaps(texts,styles){
     let bitmaps = [];
-    let bitmapCreator = { 0:this.createTextBitmap_style0,
-                          1:this.createTextBitmap_style1,
-                          2:this.createTextBitmap_style2
-                          };
     for (let i=0; i<texts.length; i++) {
       let text = texts[i];
       let style = styles[i];
-      bitmaps.push(bitmapCreator[style](text));
+      let bitmap;
+      switch (style) {
+        case 0:
+        default:
+          bitmap = this.createTextBitmap_style0(text);
+          break;
+        case 1:
+          bitmap = this.createTextBitmap_style1(text);
+          break;
+        case 2:
+          bitmap = this.createTextBitmap_style2(text);
+          break;
+      }
+      bitmaps.push(bitmap);
     }
     return bitmaps;
   }
   
   createTextBitmap_style0(text) {
+    let font = "bold 10px Sans"
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
-    ctx.font = "bold 10px Sans";
+    ctx.font = font;
     let width = 12;
     let height = ctx.measureText(text).width;
     canvas.width = width;
     canvas.height = height;
-    ctx.font = "bold 10px Sans";
+    ctx.font = font;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "red";
@@ -127,14 +131,15 @@ class ProcedurePlot extends PureComponent {
   }
   
   createTextBitmap_style1(text) {
+    let font = "10px Sans";
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
-    ctx.font = "10px Sans";
+    ctx.font = font;
     let width = 12;
     let height = ctx.measureText(text).width;
     canvas.width = width;
     canvas.height = height;
-    ctx.font = "10px Sans";
+    ctx.font = font;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "orange";
@@ -144,14 +149,15 @@ class ProcedurePlot extends PureComponent {
   }
   
   createTextBitmap_style2(text) {
+    let font = "10px Sans";
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
-    ctx.font = "10px Sans";
+    ctx.font = font;
     let width = 12;
     let height = ctx.measureText(text).width;
     canvas.width = width;
     canvas.height = height;
-    ctx.font = "10px Sans";
+    ctx.font = font;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "black";
@@ -194,5 +200,5 @@ class ProcedurePlot extends PureComponent {
   }
 }
 
-export default ProcedurePlot;
+export default ProceduresPlot;
 

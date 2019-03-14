@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
-import {bisect_left, bisect_right} from "bisect";
+import {bisect_left,bisect_right} from "bisect";
 import {toDomYCoord_Linear} from "plot-utils";
-import YAxisTwoLevelPanel from "./YAxisTwoLevelPanel";
+// Component
+import YAxisTwoLevelPanel from "../YAxisTwoLevelPanel";
 
 const SECONDARY_CATEGORIES = [
                   {name:"RA",start:0,end:1},
@@ -20,26 +21,26 @@ const PRIMARY_CATEGORIES = [{name:"",start:0,end:26,color:"#a8ebe4"},
 const COLOR_CYCLE = ["#feefce","#fffbe7"];
 
 class RespiratoryScoreLimitsPanel extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.memo = {};
-    this.memo.primaryNames = PRIMARY_CATEGORIES.map(({name})=>name);
-    this.memo.primaryStarts = PRIMARY_CATEGORIES.map(({start})=>start);
-    this.memo.primaryEnds = PRIMARY_CATEGORIES.map(({end})=>end);
-    this.memo.primaryColors = PRIMARY_CATEGORIES.map(({color})=>color);
-    this.memo.primaryBitmaps = PRIMARY_CATEGORIES.map(({name})=>YAxisTwoLevelPanel.createPrimaryCategoryBitmap(""));
-    this.memo.secondaryNames = SECONDARY_CATEGORIES.map(({name})=>name);
-    this.memo.secondaryStarts = SECONDARY_CATEGORIES.map(({start})=>start);
-    this.memo.secondaryEnds = SECONDARY_CATEGORIES.map(({end})=>end);
-    this.memo.secondaryColors = SECONDARY_CATEGORIES.map((x,i)=>COLOR_CYCLE[i%COLOR_CYCLE.length]);
-    this.memo.secondaryBitmaps = SECONDARY_CATEGORIES.map(({name})=>YAxisTwoLevelPanel.createSecondaryCategoryBitmap(name));
-  }
-  
   render() {
     let { height, minY, maxY,
           width,
           ...rest} = this.props;
-    let {memo} = this;
+    this.render_memo = this.render_memo || {};
+    let memo = this.render_memo;
+    if (memo.primaryCategories!==PRIMARY_CATEGORIES ||
+        memo.secondaryCategories!==SECONDARY_CATEGORIES) {
+      memo.primaryNames = PRIMARY_CATEGORIES.map(({name})=>name);
+      memo.primaryStarts = PRIMARY_CATEGORIES.map(({start})=>start);
+      memo.primaryEnds = PRIMARY_CATEGORIES.map(({end})=>end);
+      memo.primaryColors = PRIMARY_CATEGORIES.map(({color})=>color);
+      memo.primaryBitmaps = PRIMARY_CATEGORIES.map(({name})=>YAxisTwoLevelPanel.createPrimaryCategoryBitmap(""));
+      memo.secondaryNames = SECONDARY_CATEGORIES.map(({name})=>name);
+      memo.secondaryStarts = SECONDARY_CATEGORIES.map(({start})=>start);
+      memo.secondaryEnds = SECONDARY_CATEGORIES.map(({end})=>end);
+      memo.secondaryColors = SECONDARY_CATEGORIES.map((x,i)=>COLOR_CYCLE[i%COLOR_CYCLE.length]);
+      memo.secondaryBitmaps = SECONDARY_CATEGORIES.map(({name})=>YAxisTwoLevelPanel.createSecondaryCategoryBitmap(name));
+    }
+    
     let primaryStartIndex = Math.max(0,bisect_right(memo.primaryEnds,minY));
     let primaryEndIndex = Math.min(memo.primaryStarts.length-1,bisect_left(memo.primaryStarts,maxY));
     let secondaryStartIndex = Math.min(0,bisect_right(memo.secondaryEnds,minY));
@@ -59,7 +60,7 @@ class RespiratoryScoreLimitsPanel extends PureComponent {
     let secondaryColors = memo.secondaryColors.slice(secondaryStartIndex,secondaryEndIndex+1);
     return (
       <YAxisTwoLevelPanel primaryStarts={primaryStarts} primaryEnds={primaryEnds}
-      primaryColors={primaryColors} primaryBitmaps={primaryBitmaps}
+                          primaryColors={primaryColors} primaryBitmaps={primaryBitmaps}
                           secondaryStarts={secondaryStarts} secondaryEnds={secondaryEnds}
                           secondaryColors={secondaryColors} secondaryBitmaps={secondaryBitmaps}
                           height={height} width={width}
