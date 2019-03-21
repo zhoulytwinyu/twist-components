@@ -1,19 +1,29 @@
-import React, { Component } from "react";
-import {bisect_left,bisect_right} from "bisect";
+import { Component } from "react";
 import {toDomXCoord_Linear} from "plot-utils";
 // Import constants
-import {DISPLAY_SHORT_NAME_LUT,DISPLAY_STYLE_LUT} from "./ProceduresPlotContants";
+import ProcedureObject, {compareProcedureObjects} from "./ProcedureObject";
 
 class ProcedurePlotClickSelector extends Component {
+  constructor(props){
+    super(props);
+    this.pickingCanvas = document.createElement("canvas");
+    this.pickingCanvas.width = 1;
+    this.pickingCanvas.height = 1;
+  }
+  
   render() {
     return null;
   }
 
   shouldComponentUpdate(nextProps,nextState){
-    if (nextProps.clickEvent===this.props.clickEvent) {
-      return false;
+    if (nextProps.clickPosition!==this.props.clickPosition) {
+      return true;
     }
-    return true;
+    return false;
+  }
+  
+  componentDidMount(){
+    this.select();
   }
   
   componentDidUpdate(){
@@ -22,119 +32,56 @@ class ProcedurePlotClickSelector extends Component {
   
   select() {
     let { data,
+          selection,
           minX,maxX,width,height,
-          clickEvent} = this.props;
-    console.log(clickEvent);
+          clickPosition,
+          selectHandler} = this.props;
+    if (clickPosition===undefined) {
+      return;
+    }
+    if (clickPosition===null) {
+      selectHandler(null);
+      return;
+    }
     this.select_memo = this.select_memo || {};
     let memo = this.select_memo;
-    if (!memo.canvas) {
-      memo.canvas = document.createElement("canvas");
-      memo.canvas.width = 1;
-      memo.canvas.height = 1;
-    }
-    // Column index data and fill bitmaps etc.
     if (memo.data !== data ) {
       memo.data = data;
-      memo.names = data.map(({name})=>name);
-      memo.starts = data.map(({start})=>start);
-      memo.ends = data.map(({end})=>end);
-      memo.displays = memo.names.map((name)=>DISPLAY_SHORT_NAME_LUT[name]);
-      memo.displaySizes = this.getDisplaySizes(memo.displays,memo.styles);
+      memo.ProcedureObjectCollection = data.map( (obj)=>new ProcedureObject(obj) )
+                                            .sort(compareProcedureObjects);
     }
-    // Filter
-    let startIndex = Math.max(0,bisect_right(memo.ends,minX));
-    let endIndex = Math.min(data.length-1,bisect_left(memo.ends,maxX));
-    // Coordicate conversion
-    let startDomXs = memo.starts.slice(startIndex,endIndex+1).map( (start)=> toDomXCoord_Linear(width,minX,maxX,start) );
-    let endDomXs =  memo.ends.slice(startIndex,endIndex+1).map( (end)=> toDomXCoord_Linear(width,minX,maxX,end) );
-    let displaySizes = memo.displaySizes.slice(startIndex,endIndex+1);
-    //~ // Clear plots
-    //~ let canvas = memo.canvas;
-    //~ let ctx = canvas.getContext("2d");
-    //~ ctx.clearRect(0,0,1,1);
-    //~ ctx.translate();
-    //~ for (let i=startDomXs.length-1; i>=0; i--) {
-      //~ this.plotProcedureForPicking(ctx,width,height,startDomXs,endDomXs,displaySizes);
-    //~ }
-  }
-  
-  plotProcedureForPicking(ctx,width,height,startDomX,endDomX,displaySize) {
-    startDomX = Math.round(startDomX);
-    endDomX = Math.round(endDomX);
-    let lineWidth = Math.max(1,endDomX-startDomX);
-    let labelStartDomX = startDomX-5-displaySize.width;
-    let labelStartDomY = 5;
-    ctx.fillRect(startDomX,0,lineWidth,height);
-    ctx.fillRect(labelStartDomX,labelStartDomY,lineWidth,displaySize.height);
-  }
-  
-  plotProcedureLines(ctx,width,height,startDomXs,endDomXs,styles) {
-    let linePlotter = { 0:this.plotLine_style0,
-                        1:this.plotLine_style1,
-                        2:this.plotLine_style2
-                        };
-    for (let i=0; i<startDomXs.length; i++){
-      let startDomX = startDomXs[i];
-      let endDomX = endDomXs[i];
-      let style = styles[i];
-      linePlotter[style](ctx,width,height,startDomX,endDomX);
-    }
-  }
-  
-  getDisplaySizes(texts,styles){
-    let sizes = [];
-    for (let i=0; i<texts.length; i++) {
-      let text = texts[i];
-      let style = styles[i];
-      let size;
-      switch (style) {
-        case 0:
-        default:
-          size = this.getDisplaySize_style0(text);
-          break;
-        case 1:
-          size = this.getDisplaySizes_style1(text);
-          break;
-        case 2:
-          size = this.getDisplaySizes_style2(text);
-          break;
+    // Clear plots
+    let {pickingCanvas} = this;
+    let ctx = pickingCanvas.getContext("2d");
+    ctx.clearRect(0,0,1,1);
+    ctx.translate(-clickPosition.domX,-clickPosition.domY);
+    // Draw and pick
+    let curSelection;
+    for (let obj of memo.ProcedureObjectCollection) {
+      if (obj.start > maxX || obj.end < minX) {
+        continue;
       }
-      sizes.push(size);
+      // Draw
+      let startDomX = toDomXCoord_Linear(width,minX,maxX,obj.start);
+      let endDomX = toDomXCoord_Linear(width,minX,maxX,obj.end);
+      if (obj.id === selection) {
+        obj.drawSelectedHitbox(ctx,width,height,startDomX,endDomX);
+      }
+      else {
+        obj.drawHitbox(ctx,width,height,startDomX,endDomX);
+      }
+      // Pick
+      let imgData = ctx.getImageData(0,0,1,1);
+      if (imgData.data[3]!==0) {
+        curSelection = obj.id;
+        if (curSelection === selection) {
+          curSelection = null;
+        }
+        break;
+      }
     }
-    return sizes;
-  }
-  
-  getDisplaySize_style0(text) {
-    this.getDisplaySize_memo = this.getDisplaySize_memo || {};
-    let memo = this.getDisplaySize_memo;
-    memo.canvas = memo.canvas || document.createElement("canvas");
-    let ctx = memo.canvas.getContext("2d");
-    ctx.font = "bold 10px Sans";
-    let width = 12;
-    let height = ctx.measureText(text).width;
-    return {width,height};
-  }
-  
-  getDisplaySize_style1(text) {
-    this.getDisplaySize_memo = this.getDisplaySize_memo || {};
-    let memo = this.getDisplaySize_memo;
-    memo.canvas = memo.canvas || document.createElement("canvas");
-    let ctx = memo.canvas.getContext("2d");
-    ctx.font = "10px Sans";
-    let width = 12;
-    let height = ctx.measureText(text).width;
-    return {width,height};
-  }
-  
-  getDisplaySize_style2(text) {
-    this.getDisplaySize_memo = this.getDisplaySize_memo || {};
-    let memo = this.getDisplaySize_memo;
-    memo.canvas = memo.canvas || document.createElement("canvas");
-    let ctx = memo.canvas.getContext("2d");
-    ctx.font = "10px Sans";
-    let width = 12;
-    let height = ctx.measureText(text).width;
-    return {width,height};
+    selectHandler(curSelection);
+    ctx.translate(clickPosition.domX,clickPosition.domY);
   }
 }
 

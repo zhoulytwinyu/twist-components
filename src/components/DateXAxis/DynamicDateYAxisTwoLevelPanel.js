@@ -1,17 +1,49 @@
 import React, {PureComponent} from "react";
 import {format} from "date-fns";
+import {createPrimaryCategoryBitmap,createSecondaryCategoryBitmap,
+        drawPrimaryCategory,drawSecondaryCategory} from "../Modules/YAxisTwoLevelPanelPlotters";
+
+const PRIMARY_CATEGORY_COLOR = "lightgrey";
+const SECONDARY_CATEGORY_COLOR = "#fedda7";
 
 class DynamicDateYAxisTwoLevelPanel extends PureComponent {
+  constructor(props){
+    super(props);
+    this.ref = React.createRef();
+    this.secondaryBitmap = document.createElement("canvas");
+    this.primaryBitmap = createPrimaryCategoryBitmap("");
+  }
+  
   render(){
     let { minX,maxX,
           height,width,
           ...rest} = this.props;
-    let label = this.createLabel(minX,maxX);
     return (
-      <Panel  label={label}
-              width={width} height={height}
-              />
+      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
     );
+  }
+  
+  componentDidMount(){
+    this.draw();
+  }
+  
+  componentDidUpdate(){
+    this.draw();
+  }
+
+  draw(){
+    let { minX,maxX,
+          height,width} = this.props;
+    let canvas = this.ref.current;
+    let {secondaryBitmap,primaryBitmap} = this;
+    // Label
+    let label = this.createLabel(minX,maxX);
+    secondaryBitmap = createSecondaryCategoryBitmap(label,secondaryBitmap);
+    // Plot
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,width,height);
+    drawPrimaryCategory(ctx,width,height,primaryBitmap,PRIMARY_CATEGORY_COLOR,0,height);
+    drawSecondaryCategory(ctx,width,height,secondaryBitmap,SECONDARY_CATEGORY_COLOR,0,height);
   }
 
   createLabel(minX,maxX) {
@@ -23,66 +55,19 @@ class DynamicDateYAxisTwoLevelPanel extends PureComponent {
           if (minT.getHours()===maxT.getHours()) {
             if (minT.getMinutes()===maxT.getMinutes()) {
               if (minT.getSeconds()===maxT.getSeconds()) {
-                return format(minT,"YYYY/MMM/DD HH:mm:ss")
+                return format(minT,"YYYY/MMM/Do HH:mm:ss")
               }
-              return format(minT,"YYYY/MMM/DD HH:mm")
+              return format(minT,"YYYY/MMM/Do HH:mm")
             }
-            return format(minT,"YYYY/MMM/DD HH")
+            return format(minT,"YYYY/MMM/Do HH")
           }
-          return format(minT,"YYYY/MMM/DD")
+          return format(minT,"YYYY/MMM/Do")
         }
         return format(minT,"YYYY/MMM")
       }
       return format(minT,"YYYY")
     }
     return "Time";
-  }
-}
-
-const PARIMARY_CATEGORY_WIDTH=30;
-const PRIMARY_CATEGORY_COLOR = "lightgrey";
-const SECONDARY_CATEGORY_COLOR = "#fedda7";
-
-class Panel extends PureComponent{
-  constructor(props){
-    super(props);
-    this.ref = React.createRef();
-  }
-  
-  render(){
-    let { label,
-          height,width,
-          ...rest} = this.props;
-    return (
-      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
-    );
-  }
-
-  componentDidMount(){
-    this.draw();
-  }
-  
-  componentDidUpdate(){
-    this.draw();
-  }
-
-  draw(){
-    let {label,width,height} = this.props;
-    let canvas = this.ref.current;
-    let ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,width,height);
-    //
-    ctx.fillStyle = PRIMARY_CATEGORY_COLOR;
-    ctx.fillRect(0,0,PARIMARY_CATEGORY_WIDTH,height);
-    //
-    ctx.fillStyle = SECONDARY_CATEGORY_COLOR;
-    ctx.fillRect(PARIMARY_CATEGORY_WIDTH,0,width-PARIMARY_CATEGORY_WIDTH,height);
-    //
-    ctx.fillStyle = "black";
-    ctx.font = "bold 12px Sans";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    ctx.fillText(label,PARIMARY_CATEGORY_WIDTH+5,height/2);
   }
 }
 

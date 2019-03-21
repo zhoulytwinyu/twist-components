@@ -17,9 +17,13 @@ class LocationPlot extends PureComponent {
   render() {
     let { data,
           width,minX,maxX,
+          style,
           ...rest} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={1} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={1}
+              {...rest}
+              style={{...style,backgroundColor:"lightgrey"}}>
+      </canvas>
     );
   }
   
@@ -32,7 +36,8 @@ class LocationPlot extends PureComponent {
   }
   
   draw() {
-    let {data, minX,maxX,width} = this.props;
+    let { data,
+          minX,maxX,width} = this.props;
     this.draw_memo = this.draw_memo || {};
     let memo = this.draw_memo;
     if (memo.data!==data) {

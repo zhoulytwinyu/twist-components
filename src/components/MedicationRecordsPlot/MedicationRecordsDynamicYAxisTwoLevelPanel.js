@@ -1,81 +1,77 @@
 import React, { PureComponent } from 'react';
-import YAxisTwoLevelPanel from "../YAxisTwoLevelPanel";
+import {createPrimaryCategoryBitmap,createSecondaryCategoryBitmap,
+        drawPrimaryCategory,drawSecondaryCategory} from "../Modules/YAxisTwoLevelPanelPlotters";
 
-const PRIMARY_COLOR_CYCLE = ["cyan","blue","green"];
-const SECONDARY_COLOR_CYCLE = ["yellow","beige"];
+const PRIMARY_COLOR_CYCLE = ["#d2b4de","#aed6f1","#a9dfbf","#f9e79f","#f5cba7"];
+const SECONDARY_COLOR_CYCLE = ["#feefce","#fffbe7"];
 
 class MedicationRecordsDynamicYAxisTwoLevelPanel extends PureComponent{
   constructor(props){
     super(props);
-    this.memo={};
+    this.ref = React.createRef();
   }
   render(){
     let { categoryStructure, /* [{name,children:[...]}] */
           useMedications, /* Set */
           rowHeight, width, height,
           ...rest} = this.props;
-    let {memo} = this;
+    return (
+      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
+    );
+  }
+
+  componentDidMount(){
+    this.draw();
+  }
+
+  componentDidUpdate(){
+    this.draw();
+  }
+
+  draw(){
+    let { categoryStructure, /* [{name,children:[...]}] */
+          useMedications, /* Set */
+          rowHeight, width, height,
+          } = this.props;
+    this.draw_memo = this.draw_memo ||{};
+    let memo = this.draw_memo;
     if (memo.categoryStructure !== categoryStructure) {
       memo.categoryStructure = categoryStructure;
-      memo.primaryColors_LUT = {};
-      memo.primaryBitmaps_LUT = {};
-      for (let i=0; i<categoryStructure.length; i++) {
-        let name = categoryStructure[i]["name"];
-        if (!memo.primaryBitmaps_LUT[name]) {
-          memo.primaryBitmaps_LUT[name] = YAxisTwoLevelPanel.createPrimaryCategoryBitmap(name);
+      memo.categoryStructureClone = [];
+      for (let i=0; i<categoryStructure.length; i++){
+        let p = categoryStructure[i];
+        let newP = {};
+        newP.name = p.name;
+        newP.children = [];
+        newP.bitmap = createPrimaryCategoryBitmap(p.name);;
+        newP.color = PRIMARY_COLOR_CYCLE[i%PRIMARY_COLOR_CYCLE.length];
+        for (let j=0; j<p.children.length; j++) {
+          let s = p.children[j];
+          let newS = {};
+          newS.name = s.name;
+          newS.bitmap = createSecondaryCategoryBitmap(s.name);
+          newP.children.push(newS);
         }
-        if (!memo.primaryColors_LUT[name]) {
-          memo.primaryColors_LUT[name] = PRIMARY_COLOR_CYCLE[i%PRIMARY_COLOR_CYCLE.length];
-        }
-      }
-      memo.secondaryBitmaps_LUT = {};
-      for (let name of categoryStructure.map(({children})=>children).flat().map(({name})=>name) ) {
-        if (!memo.secondaryBitmaps_LUT[name]) {
-          memo.secondaryBitmaps_LUT[name] = YAxisTwoLevelPanel.createSecondaryCategoryBitmap(name);
-        }
+        memo.categoryStructureClone.push(newP);
       }
     }
-
-    let primaryBitmaps = [];
-    let primaryStarts = [];
-    let primaryEnds = [];
-    let primaryColors = [];
-    let secondaryBitmaps = [];
-    let secondaryStarts = [];
-    let secondaryEnds = [];
-    let secondaryColors = [];
-    
+    let canvas = this.ref.current;
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,width,height);
     for (let i=0,rowNum=0; i<categoryStructure.length; i++) {
-      let {name:primary,children} = categoryStructure[i];
+      let p = memo.categoryStructureClone[i];
       let rowStart = rowNum;
-      for (let secondary of children.map(({name})=>name)) {
-        if (useMedications.has(secondary)) {
-          secondaryBitmaps.push(memo.secondaryBitmaps_LUT[secondary]);
-          secondaryStarts.push(rowNum*rowHeight);
-          secondaryEnds.push((rowNum+1)*rowHeight);
+      for (let s of p.children) {
+        if (useMedications.has(s.name)) {
+          let color = SECONDARY_COLOR_CYCLE[rowNum%SECONDARY_COLOR_CYCLE.length];
+          drawSecondaryCategory(ctx,width,height,s.bitmap,color,rowNum*rowHeight,(rowNum+1)*rowHeight);
           rowNum+=1;
-          secondaryColors.push(SECONDARY_COLOR_CYCLE[rowNum%SECONDARY_COLOR_CYCLE.length]);
         }
       }
       if (rowNum !== rowStart) {
-        primaryBitmaps.push(memo.primaryBitmaps_LUT[primary]);
-        primaryStarts.push(rowStart*rowHeight);
-        primaryEnds.push(rowNum*rowHeight);
-        primaryColors.push(memo.primaryColors_LUT[primary]);
+        drawPrimaryCategory(ctx,width,height,p.bitmap,p.color,rowStart*rowHeight,rowNum*rowHeight);
       }
     }
-    
-    return <YAxisTwoLevelPanel  primaryBitmaps={primaryBitmaps}
-                                primaryStarts={primaryStarts}
-                                primaryEnds={primaryEnds}
-                                primaryColors={primaryColors}
-                                secondaryBitmaps={secondaryBitmaps}
-                                secondaryStarts={secondaryStarts}
-                                secondaryEnds={secondaryEnds}
-                                secondaryColors={secondaryColors}
-                                height={height} width={width}
-                                {...rest}
-                                />
   }
 }
 

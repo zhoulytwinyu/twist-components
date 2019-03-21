@@ -4,7 +4,7 @@ export const DISPLAY_SHORT_NAME_LUT = { "HLHS STAGE I, CARDIAC":"S1P",
                                         "VESICOSTOMY CREATION/CLOSURE, GU":"GI",
                                         "BIDIRECTIONAL GLEN SHUNT, CARDIAC":"GI"
                                         };
-
+// Procedure 
 export const DISPLAY_STYLE_LUT = {"HLHS STAGE I, CARDIAC":0,
                                   "CHEST CLOSURE, CARDIAC OFF UNIT":2,
                                   "GASTROSTOMY, LAPAROSCOPIC, GENSURG":0,

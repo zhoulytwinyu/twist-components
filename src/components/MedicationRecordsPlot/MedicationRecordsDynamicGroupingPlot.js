@@ -39,6 +39,7 @@ class MedicationRecordsDynamicGroupedPlot extends PureComponent {
           width,height,
           } = this.props;
     let {memo} = this;
+    console.log(medicationRecords);
     if (memo.medicationRecords !== medicationRecords) {
       memo.medicationRecords = medicationRecords;
       memo.doseBitmaps_LUT = {};
@@ -88,7 +89,8 @@ class MedicationRecordsDynamicGroupedPlot extends PureComponent {
       let Y = Ys[i];
       let doseBitmap = doseBitmaps[i];
       let type = types[i];
-      ctx.strokeRect(startX,Y-r,endX-startX,2*r);
+      this.drawCircle(ctx,startX,Y,r,'lightgreen');
+      ctx.drawImage(doseBitmap,startX-doseBitmap.width/2,Y-doseBitmap.height/2);
     }
   }
   

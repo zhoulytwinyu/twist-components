@@ -40,23 +40,30 @@ class DateVerticalGridLines extends PureComponent {
       let {grids, validFromDiffX, validToDiffX} = generateDateGrids(minX,maxX,memo.rangeMinX,memo.rangeMaxX);
       memo.validFromDiffX = validFromDiffX;
       memo.validToDiffX = validToDiffX;
-      memo.grids = grids;
+      memo.majorGrids = grids;
+      memo.minorGrids = this.generateMinorGrids(grids);
     }
     // Filter
-    let startIndex = Math.max(0,bisect_right(memo.grids,minX));
-    let endIndex = Math.min(memo.grids.length-1,bisect_left(memo.grids,maxX));
-    let domXs = memo.grids.slice(startIndex,endIndex+1).map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
+    let majorGridStartIndex = Math.max(0,bisect_right(memo.majorGrids,minX));
+    let majorGridEndIndex = Math.min(memo.majorGrids.length-1,bisect_left(memo.majorGrids,maxX));
+    let majorGridDomXs = memo.majorGrids.slice(majorGridStartIndex,majorGridEndIndex+1)
+                              .map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
+    let minorGridStartIndex = Math.max(0,bisect_right(memo.minorGrids,minX));
+    let minorGridEndIndex = Math.min(memo.majorGrids.length-1,bisect_left(memo.minorGrids,maxX));
+    let minorGridDomXs = memo.minorGrids.slice(minorGridStartIndex,minorGridEndIndex+1)
+                                        .map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
     // Draw
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
-    ctx.globalAlpha = 0.1;
-    this.verticalLinePlot(ctx,width,1,domXs);
+    ctx.globalAlpha = 0.3;
+    this.verticalLinePlot(ctx,width,1,majorGridDomXs);
+    ctx.globalAlpha = 0.15;
+    this.verticalLinePlot(ctx,width,1,minorGridDomXs);
   }
   
   verticalLinePlot(ctx,width,height,domXs){
     let x = null;
-    let c = null;
     ctx.beginPath();
     for (let i=0; i<domXs.length; i++) {
       x = Math.round(domXs[i]);
@@ -64,6 +71,18 @@ class DateVerticalGridLines extends PureComponent {
       ctx.lineTo(x,height);
     }
     ctx.stroke();
+  }
+  
+  generateMinorGrids(grids) {
+    if (grids.length===0) {
+      return [];
+    }
+    let minorGrids = [];
+    let prevGrid = grids[0];
+    for (let i=1; i<grids.length; i++){
+      minorGrids.push((grids[i]+prevGrid)/2);
+    }
+    return minorGrids;
   }
 }
 

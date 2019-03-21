@@ -1,4 +1,9 @@
 import React, { PureComponent } from 'react';
+// Components
+import DragOverlay from "../UtilityComponents/DragOverlay";
+import CountDown from "../UtilityComponents/CountDown";
+
+// CSS
 import "./PlotInteractionBox.css";
 
 class PlotInteractionBox extends PureComponent {
@@ -37,8 +42,8 @@ class PlotInteractionBox extends PureComponent {
             <div  ref={this.ref} {...rest}>
               {children}
             </div>
-            <DocumentInteractions mouseMoveHandler={this.handleMouseMove_Clicking} mouseUpHandler={this.handleMouseUp_Clicking}/>
-            <Timer timeout={200} callback={this.clickTimeout}/>
+            <DragOverlay mouseMoveHandler={this.handleMouseMove_Clicking} mouseUpHandler={this.handleMouseUp_Clicking} cursor="point"/>
+            <CountDown timeout={200} callback={this.clickTimeout}/>
           </>
         );
       case "auto-selecting":
@@ -47,9 +52,8 @@ class PlotInteractionBox extends PureComponent {
             <div  ref={this.ref} {...rest}>
               {children}
             </div>
-            <DocumentInteractions mouseMoveHandler={this.handleMouseMove_AutoSelecting} mouseUpHandler={this.handleMouseUp_AutoSelecting}/>
-            <Timer timeout={500} callback={this.autoSelectingTimeout}/>
-            <div className="PlotInteractionBox-selectingOverlay"></div>
+            <DragOverlay mouseMoveHandler={this.handleMouseMove_AutoSelecting} mouseUpHandler={this.handleMouseUp_AutoSelecting} cursor="nesw-resize"/>
+            <CountDown timeout={500} callback={this.autoSelectingTimeout}/>
           </>
         );
       case "selecting":
@@ -58,7 +62,7 @@ class PlotInteractionBox extends PureComponent {
             <div  ref={this.ref} {...rest}>
               {children}
             </div>
-            <DocumentInteractions mouseMoveHandler={this.handleMouseMove_Selecting} mouseUpHandler={this.handleMouseUp_Selecting}/>
+            <DragOverlay mouseMoveHandler={this.handleMouseMove_Selecting} mouseUpHandler={this.handleMouseUp_Selecting} cursor="nesw-resize"/>
             <div className="PlotInteractionBox-selectingOverlay"></div>
           </>
         );
@@ -68,7 +72,7 @@ class PlotInteractionBox extends PureComponent {
             <div  ref={this.ref} {...rest}>
               {children}
             </div>
-            <DocumentInteractions mouseMoveHandler={this.handleMouseMove_Panning} mouseUpHandler={this.handleMouseUp_Panning}/>
+            <DragOverlay mouseMoveHandler={this.handleMouseMove_Panning} mouseUpHandler={this.handleMouseUp_Panning} cursor="grabbing"/>
             <div className="PlotInteractionBox-panningOverlay"></div>
           </>
         );
@@ -87,22 +91,18 @@ class PlotInteractionBox extends PureComponent {
 
   handleMouseOut_Hovering = (ev)=>{
     let {hoverEndHandler} = this.props;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    hoverEndHandler({domX,domY});
+    hoverEndHandler();
   }
   
   handleMouseDown_Hovering = (ev)=>{
     let {hoverEndHandler} = this.props;
     ev.preventDefault();
-    ev.stopPropagation();
     let referenceFrame = this.ref.current.getBoundingClientRect();
     let domX = ev.clientX - referenceFrame.left;
     let domY = ev.clientY - referenceFrame.top;
     let mousePosition = {domX,domY};
-    hoverEndHandler(mousePosition);
     this.initialMouseDownPosition = mousePosition;
+    hoverEndHandler();
     this.setState({mode:"clicking"});
   }
 
@@ -116,7 +116,7 @@ class PlotInteractionBox extends PureComponent {
   }
   
   handleMouseMove_Clicking = (ev)=> {
-    let {hoverEndHandler} = this.props;
+    let {selectingHandler} = this.props;
     let {initialMouseDownPosition} = this;
     let referenceFrame = this.ref.current.getBoundingClientRect();
     let domX = ev.clientX - referenceFrame.left;
@@ -126,7 +126,7 @@ class PlotInteractionBox extends PureComponent {
       return;
     }
     else {
-      hoverEndHandler({domX,domY});
+      selectingHandler({domX,domY});
       this.setState({mode:"selecting"});
     }
   }
@@ -205,58 +205,6 @@ class PlotInteractionBox extends PureComponent {
     let domY = ev.clientY - referenceFrame.top;
     pannedHandler(initialMouseDownPosition,{domX,domY});
     this.setState({mode:"hovering"});
-  }
-}
-
-class Timer extends PureComponent{
-  render(){
-    return null;
-  }
-  
-  componentDidMount(){
-    let {timeout,callback} = this.props;
-    this.timeout = setTimeout(callback,timeout);
-  }
-
-  componentDidUpdate(){
-    clearTimeout(this.timeout);
-    let {timeout,callback} = this.props;
-    this.timeout = setTimeout(callback,timeout);
-  }
-
-  componentWillUnmount(){
-    clearTimeout(this.timeout);
-  }
-}
-
-class DocumentInteractions extends PureComponent {
-  constructor(props){
-    super(props);
-    this.state = {event:null};
-  }
-  
-  render() {
-    return null;
-  }
-
-  componentDidMount(){
-    document.addEventListener("mousemove",this.handleMouseMove);
-    document.addEventListener("mouseup",this.handleMouseUp);
-  }
-
-  componentWillUnmount(){
-    document.removeEventListener("mousemove",this.handleMouseMove);
-    document.removeEventListener("mouseup",this.handleMouseUp);
-  }
-  
-  handleMouseMove = (ev)=>{
-    let {mouseMoveHandler} = this.props;
-    mouseMoveHandler(ev);
-  }
-
-  handleMouseUp = (ev)=>{
-    let {mouseUpHandler} = this.props;
-    mouseUpHandler(ev);
   }
 }
 

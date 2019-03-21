@@ -2,24 +2,37 @@ import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 import { changeTopLevelPlot } from "../actions/plot-actions";
 // Import components
-import RespiratoryScoresLimitsPanel from "../components/RespiratoryScoresPlot/RespiratoryScoreLimitsPanel";
+import RespiratoryScoresPlotLimitsPanel from "../components/RespiratoryScoresPlot/RespiratoryScoresPlotLimitsPanel";
 import RespiratoryScoresPlotHorizontalSlabGrid from "../components/RespiratoryScoresPlot/RespiratoryScoresPlotHorizontalSlabGrid";
 import RespiratoryScoresPlot from "../components/RespiratoryScoresPlot/RespiratoryScoresPlot";
-import LocationPlot from "../components/LocationsPlot/LocationsPlot";
-import LocationPlotYAxisTwoLevelPanel from "../components/LocationPlotYAxisTwoLevelPanel";
-import LocationPlotSelectionLabel from "../components/LocationPlotSelectionLabel";
+//
+import LocationsPlot from "../components/LocationsPlot/LocationsPlot";
+import LocationsPlotYAxisTwoLevelPanel from "../components/LocationsPlot/LocationsPlotYAxisTwoLevelPanel";
+import LocationsPlotSelectionLabel from "../components/LocationsPlot/LocationsPlotSelectionLabel";
+import LocationsPlotHoverSelector from "../components/LocationsPlot/LocationsPlotHoverSelector";
+//
 import ProceduresPlot from "../components/ProceduresPlot/ProceduresPlot";
 import ProceduresPlotClickSelector from "../components/ProceduresPlot/ProceduresPlotClickSelector";
+import ProceduresPlotHoverSelector from "../components/ProceduresPlot/ProceduresPlotHoverSelector";
+import ProceduresPlotTimeDiff from "../components/ProceduresPlot/ProceduresPlotTimeDiff";
+//
 import PlotInteractionBoxProvider from "../components/Interaction/PlotInteractionBoxProvider";
 //
 import DynamicDateYAxisTwoLevelPanel from "../components/DateXAxis/DynamicDateYAxisTwoLevelPanel";
 import DateXAxis from "../components/DateXAxis/DateXAxis";
 import DateVerticalGridLines from "../components/DateXAxis/DateVerticalGridLines";
-import VerticalCrosshair from "../components/VerticalCrosshair";
-import SelectionPoint from "../components/SelectionPoint";
-import InPlotXRangeSelection from "../components/InPlotXRangeSelection";
-
-import "./RespPlotBundle.css";
+//import SelectionPoint from "../components/SelectionPoint";
+import InPlotXRangeSelection from "../components/InPlotXRangeSelection/InPlotXRangeSelection";
+import InPlotXRangeSelector from "../components/InPlotXRangeSelection/InPlotXRangeSelector";
+import OnPlotXRangeSelection from "../components/OnPlotXRangeSelection/OnPlotXRangeSelection";
+//
+import VerticalCrosshair from "../components/VerticalCrosshair/VerticalCrosshair";
+import VerticalCrosshairSelector from "../components/VerticalCrosshair/VerticalCrosshairSelector";
+//
+import Relay from "../components/UtilityComponents/Relay";
+import GradientOverlay from "../components/UtilityComponents/GradientOverlay";
+// CSS
+import "./plot.css";
 
 // Fake data
 import respiratoryScore from "./test-data/respiratoryScore";
@@ -40,19 +53,20 @@ let yLimitPosition = [{name:"ECMO",start:80,end:100},{name:"Haha",start:0,end:80
 let yLimitCategoryColors = ["yellow","orange","cyan"];
 let yLimitColors = ["red","blue"];
 
-const LEFT_WIDTH=150;
-const PLOT_WIDTH=1000;
-
-const TOP_HEIGHT=50;
-const PLOT_HEIGHT=300;
-const BOTTOM_HEIGHT=30;
+const YAXIS_WIDTH=150;
+const X1AXIS_HEIGHT=50;
+const XAXIS_HEIGHT=30;
 
 class RespPlotBundle extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = {hoverX:null,hoverY:null,
-                  hoverDomX:null,hoverDomY:null,
-                  hoverTimeStamp:null,
+    this.state = {hoverDomX:null,
+                  locationSelection:null,
+                  procedureSelection:null,
+                  procedureHoverSelection:null,
+                  dataPointSelection:null,
+                  inPlotXRangeSelectionStartX:null,
+                  inPlotXRangeSelectionEndX:null,
                   };
     this.setState = this.setState.bind(this);
   }
@@ -64,120 +78,161 @@ class RespPlotBundle extends PureComponent {
           clickDomX, clickDomY,
           clickTimeStamp,
           verticalCrosshair_X,
-          locationSelection,
-          dataPoint_hoverSelection,
           inPlotXRangeSelection_StartX,inPlotXRangeSelection_EndX,
           onPlotXRangeSelection_StartX,onPlotXRangeSelection_EndX,
           onPlotXRangeSelection_LeftDeltaX,onPlotXRangeSelection_RightDeltaX,
           procedurePlot_selection,procedurePlot_autoSelection,
+          width,height,
           // location
           // procedure
           // respiratory
           // data
           } = this.props;
     
-    let { hoverX,hoverY,
-          hoverDomX,hoverDomY,
-          hoverTimeStamp} = this.state;
-    let { changeHandler } = this.props;
+    let { hoverDomX,
+          locationSelection,
+          procedureSelection,
+          procedureHoverSelection,
+          inPlotXRangeSelectionStartX,
+          inPlotXRangeSelectionEndX,
+          } = this.state;
     minX = minX-panningX;
     maxX = maxX-panningX;
-
+    
+    let plotWidth = width-YAXIS_WIDTH;
+    let plotHeight = height-XAXIS_HEIGHT-X1AXIS_HEIGHT;
+    
     return (
-      <div style={{position:"relative", width:LEFT_WIDTH+PLOT_WIDTH, height:TOP_HEIGHT+PLOT_HEIGHT+BOTTOM_HEIGHT}}>
+      <div style={{position:"relative", width:width, height:height}}>
         {/*  Location Plot  */}
         {/*Row 0 Col 0: Location Plot Y Axis*/}
-        <div style={{position:"absolute",width:LEFT_WIDTH,height:TOP_HEIGHT}}>
-          <LocationPlotYAxisTwoLevelPanel className="RespPlotBundle-fillParent"
-                                          width={LEFT_WIDTH} height={TOP_HEIGHT}/>
+        <div style={{position:"absolute",width:YAXIS_WIDTH,height:X1AXIS_HEIGHT}}>
+          <LocationsPlotYAxisTwoLevelPanel className="fillParent"
+                                          width={YAXIS_WIDTH} height={X1AXIS_HEIGHT}/>
         </div>
         {/*Row 0 Col 1: Location Plot*/}
-        <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT,left:LEFT_WIDTH,backgroundColor:"#fff5e9"}}>
-          <div style={{position:"absolute",width:PLOT_WIDTH,height:TOP_HEIGHT/2,top:TOP_HEIGHT/4,backgroundColor:"lightgrey"}}>
-            <LocationPlot className="RespPlotBundle-fillParent"
-                          data={location}
-                          minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                          />
-            <LocationPlotSelectionLabel className="RespPlotBundle-fillParent"
-                                        selection={locationSelection}
-                                        minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                        />
+        <div style={{position:"absolute",width:plotWidth,height:X1AXIS_HEIGHT,left:YAXIS_WIDTH,backgroundColor:"#fff5e9"}}>
+          <div style={{position:"absolute",width:plotWidth,height:X1AXIS_HEIGHT/2,top:X1AXIS_HEIGHT/4}}>
+            <LocationsPlot  className="fillParent"
+                            data={location}
+                            minX={minX} maxX={maxX} width={plotWidth}
+                            />
+            <LocationsPlotSelectionLabel  className="fillParent"
+                                          selection={locationSelection}
+                                          minX={minX} maxX={maxX} width={plotWidth}
+                                          />
           </div>
-          <VerticalCrosshair className="RespPlotBundle-fillParent"
+          <VerticalCrosshair className="fillParent"
                              X={verticalCrosshair_X}
-                             minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                             minX={minX} maxX={maxX} width={plotWidth}
                              />
-          <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
+          <InPlotXRangeSelection  className="fillParent"
                                   startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
-                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
+                                  minX={minX} maxX={maxX} width={plotWidth}/>
         </div>
         {/*  End Location Plot  */}
         {/*Row 1 Col 0: Respiratory Plot Y Axis*/}
-        <div style={{position:"absolute",width:LEFT_WIDTH,height:PLOT_HEIGHT,top:TOP_HEIGHT}}>
-          <RespiratoryScoresLimitsPanel className="RespPlotBundle-fillParent"
-                                        minY={minY} maxY={maxY} width={LEFT_WIDTH} height={PLOT_HEIGHT}
+        <div style={{position:"absolute",width:YAXIS_WIDTH,height:plotHeight,top:X1AXIS_HEIGHT}}>
+          <RespiratoryScoresPlotLimitsPanel className="fillParent"
+                                        minY={minY} maxY={maxY} width={YAXIS_WIDTH} height={plotHeight}
                                         />
         </div>
         {/*Row 1 Col 1: Respiratory Plot*/}
-        <div style={{position:"absolute",width:PLOT_WIDTH,height:PLOT_HEIGHT,left:LEFT_WIDTH,top:TOP_HEIGHT,overflow:"hidden"}}>
-          <RespiratoryScoresPlotHorizontalSlabGrid  className="RespPlotBundle-fillParent"
-                                                    minY={minY} maxY={maxY} height={PLOT_HEIGHT}
+        <div style={{position:"absolute",width:plotWidth,height:plotHeight,left:YAXIS_WIDTH,top:X1AXIS_HEIGHT,overflow:"hidden"}}>
+          <RespiratoryScoresPlotHorizontalSlabGrid  className="fillParent"
+                                                    minY={minY} maxY={maxY} height={plotHeight}
                                                     />
-          <DateVerticalGridLines  className="RespPlotBundle-fillParent"
-                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
+          <DateVerticalGridLines  className="fillParent"
+                                  minX={minX} maxX={maxX} width={plotWidth}
                                   />
-          <RespiratoryScoresPlot  className="RespPlotBundle-fillParent"
+          <RespiratoryScoresPlot  className="fillParent"
                                   respiratoryScores={respiratoryScore} iNO={iNO} anesthetics={anesthetics}
-                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                                  minY={minY} maxY={maxY} height={PLOT_HEIGHT}
+                                  minX={minX} maxX={maxX} width={plotWidth}
+                                  minY={minY} maxY={maxY} height={plotHeight}
                                   />
-          <ProceduresPlot className="RespPlotBundle-fillParent"
-                          data = {procedure}
-                          minX={minX} maxX={maxX} width={PLOT_WIDTH} height={PLOT_HEIGHT}
+          <ProceduresPlot className="fillParent"
+                          data = {procedure} selection={procedureSelection || procedureHoverSelection}
+                          minX={minX} maxX={maxX} width={plotWidth} height={plotHeight}
                           />
-          <SelectionPoint className="RespPlotBundle-fillParent"
-                          minX={minX} maxX={maxX} width={PLOT_WIDTH}
-                          minY={minY} maxY={maxY} height={PLOT_HEIGHT} 
-                          />
-          <VerticalCrosshair className="RespPlotBundle-fillParent"
+          <ProceduresPlotTimeDiff data = {procedure}
+                                  selection={procedureSelection || procedureHoverSelection}
+                                  hoverDomX={hoverDomX}
+                                  minX={minX} maxX={maxX} width={plotWidth} height={plotHeight}
+                                  />
+          <VerticalCrosshair className="fillParent"
                              X={verticalCrosshair_X}
-                             minX={minX} maxX={maxX} width={PLOT_WIDTH}
+                             minX={minX} maxX={maxX} width={plotWidth}
                              />
-          <InPlotXRangeSelection  className="RespPlotBundle-fillParent"
-                                  startX={inPlotXRangeSelection_StartX} endX={inPlotXRangeSelection_EndX}
-                                  minX={minX} maxX={maxX} width={PLOT_WIDTH}/>
-          // Main plot area interaction
-          <PlotInteractionBoxProvider className="RespPlotBundle-fillParent"
-                                      render={({hoveringEvent,hoverEndEvent,
-                                                clickEvent,doubleClickEvent,
-                                                selectingEventStart,selectingEventEnd,
-                                                selectedEventStart,selectedEventEnd,
-                                                panningEventStart,panningEventEnd,
-                                                pannedEventStart,pannedEventEnd})=>
+          <InPlotXRangeSelection  className="fillParent"
+                                  startX={inPlotXRangeSelectionStartX} endX={inPlotXRangeSelectionEndX}
+                                  minX={minX} maxX={maxX} width={plotWidth}/>
+          {/* Main plot area interaction */}
+          <PlotInteractionBoxProvider className="fillParent"
+                                      render={({hoveringPosition,
+                                                clickPosition,doubleClickPosition,
+                                                selectingPositionStart,selectingPositionEnd,
+                                                selectedPositionStart,selectedPositionEnd,
+                                                panningPositionStart,panningPositionEnd,
+                                                pannedPositionStart,pannedPositionEnd})=>
             <>
+              <OnPlotXRangeSelection  className="fillParent"
+                                      minX={minX} maxX={maxX} height={plotHeight} width={plotWidth}
+                                      startX={onPlotXRangeSelection_StartX+onPlotXRangeSelection_LeftDeltaX}
+                                      endX={onPlotXRangeSelection_EndX+onPlotXRangeSelection_RightDeltaX}
+                                      topHandle={true}
+                                      draggingLeftHandler={this.onPlotXRangeSelection_DraggingLeftHandler}
+                                      draggingMainHandler={this.onPlotXRangeSelection_DraggingMainHandler}
+                                      draggingRightHandler={this.onPlotXRangeSelection_DraggingRightHandler}
+                                      draggedLeftHandler={this.onPlotXRangeSelection_DraggedLeftHandler}
+                                      draggedMainHandler={this.onPlotXRangeSelection_DraggedMainHandler}
+                                      draggedRightHandler={this.onPlotXRangeSelection_DraggedRightHandler}
+                                      />
+              <Relay  hoveringPosition={hoveringPosition}
+                      updateHandler={this.updateHoverDomX}
+                      />
+              <InPlotXRangeSelector selectingPositionStart={selectingPositionStart}
+                                    selectingPositionEnd={selectingPositionEnd}
+                                    minX={minX} maxX={maxX} width={plotWidth}
+                                    selectHandler={this.handleInPlotXRangeSelection}
+                                    />
+              <LocationsPlotHoverSelector data={location}
+                                          hoveringPosition={hoveringPosition}
+                                          minX={minX} maxX={maxX} width={plotWidth}
+                                          selectHandler={this.handleSelectLocation}
+                                          />
               <ProceduresPlotClickSelector  data = {procedure}
+                                            selection = {procedureSelection}
                                             minX={minX} maxX={maxX}
-                                            width={PLOT_WIDTH} height={PLOT_HEIGHT}
-                                            clickEvent={clickEvent}
+                                            width={plotWidth} height={plotHeight}
+                                            clickPosition={clickPosition}
+                                            selectHandler={this.handleClickSelectProcedure}
+                                            />
+              <ProceduresPlotHoverSelector  data={procedure}
+                                            minX={minX} maxX={maxX}
+                                            width={plotWidth} height={plotHeight}
+                                            hoveringPosition={hoveringPosition}
+                                            selectHandler={this.handleHoverSelectProcedure}
                                             />
             </>
           }/>
         </div>
         {/*  End Respiratory Plot  */}
         {/*  X Axis  */}
-        <div style={{position:"absolute",width:LEFT_WIDTH,height:BOTTOM_HEIGHT,left:0,top:PLOT_HEIGHT+TOP_HEIGHT}}>
-          <DynamicDateYAxisTwoLevelPanel  className="RespPlotBundle-fillParent"
+        <div style={{position:"absolute",width:YAXIS_WIDTH,height:XAXIS_HEIGHT,left:0,top:plotHeight+X1AXIS_HEIGHT}}>
+          <DynamicDateYAxisTwoLevelPanel  className="fillParent"
                                           minX={minX} maxX={maxX}
-                                          width={LEFT_WIDTH} height={BOTTOM_HEIGHT}
+                                          width={YAXIS_WIDTH} height={XAXIS_HEIGHT}
                                           />
         </div>
-        <div style={{position:"absolute",width:PLOT_WIDTH,height:BOTTOM_HEIGHT,left:LEFT_WIDTH,top:PLOT_HEIGHT+TOP_HEIGHT}}>
-          <DateXAxis  className="RespPlotBundle-fillParent"
+        <div style={{position:"absolute",width:plotWidth,height:XAXIS_HEIGHT,left:YAXIS_WIDTH,top:plotHeight+X1AXIS_HEIGHT}}>
+          <DateXAxis  className="fillParent"
                       minX={minX} maxX={maxX}
-                      height={BOTTOM_HEIGHT} width={PLOT_WIDTH}
+                      height={XAXIS_HEIGHT} width={plotWidth}
                       />
         </div>
         {/*  End X Axis  */}
+        {/* Other decorations */}
+        <GradientOverlay  style={{position:"absolute",width:10,height:plotHeight+XAXIS_HEIGHT+X1AXIS_HEIGHT,left:YAXIS_WIDTH,top:0}}/>
       </div>
     );
   }
@@ -206,9 +261,33 @@ class RespPlotBundle extends PureComponent {
                     maxY:maxY+this.incrementY});
   }
   
-  locationPlot_selectHandler = (selection)=> {
-    let {changeHandler} = this.props;
-    changeHandler({ locationSelection:selection,
+  updateHoverDomX = ({hoveringPosition})=>{
+    if (hoveringPosition===undefined) {
+      return;
+    }
+    let domX = null;
+    if (hoveringPosition) {
+      domX = hoveringPosition.domX;
+    }
+    this.setState({ hoverDomX:domX });
+  }
+
+  handleInPlotXRangeSelection = (startX,endX)=>{
+    this.setState({ inPlotXRangeSelectionStartX:startX,inPlotXRangeSelectionEndX:endX });
+  }
+  
+  handleSelectLocation = (selection)=>{
+    this.setState({ locationSelection:selection,
+                    });
+  }
+
+  handleClickSelectProcedure = (selection)=>{
+    this.setState({ procedureSelection:selection,
+                    });
+  }
+  
+  handleHoverSelectProcedure = (selection)=>{
+    this.setState({ procedureHoverSelection:selection,
                     });
   }
   
@@ -229,8 +308,6 @@ class RespPlotBundle extends PureComponent {
                     doubleClickDomX:domX,
                     doubleClickDomY:domY,
                     doubleClickStamp:timestamp,
-                    minX:0,
-                    maxX:180000
                     });
   }
 
@@ -313,33 +390,33 @@ class RespPlotBundle extends PureComponent {
     changeHandler({procedurePlot_autoSelection:selection});
   }
   
-  onPlotXRangeSelection_DraggingLeftHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggingLeftHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX
                     });
   }
   
-  onPlotXRangeSelection_DraggingMainHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggingMainHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_LeftDeltaX: deltaDataX,
                     onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
-  onPlotXRangeSelection_DraggingRightHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggingRightHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_RightDeltaX: deltaDataX
                     });
   }
   
-  onPlotXRangeSelection_DraggedLeftHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggedLeftHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_StartX: this.props.onPlotXRangeSelection_StartX+deltaDataX,
                     onPlotXRangeSelection_LeftDeltaX: 0
                     });
   }
   
-  onPlotXRangeSelection_DraggedMainHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggedMainHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_StartX: this.props.onPlotXRangeSelection_StartX+deltaDataX,
                     onPlotXRangeSelection_EndX: this.props.onPlotXRangeSelection_EndX+deltaDataX,
@@ -348,18 +425,13 @@ class RespPlotBundle extends PureComponent {
                     });
   }
   
-  onPlotXRangeSelection_DraggedRightHandler = ({deltaDataX}) => {
+  onPlotXRangeSelection_DraggedRightHandler = (deltaDataX) => {
     let {changeHandler} = this.props;
     changeHandler({ onPlotXRangeSelection_EndX: this.props.onPlotXRangeSelection_EndX+deltaDataX,
                     onPlotXRangeSelection_RightDeltaX: 0
                     });
   }
 }
-
-RespPlotBundle.prototype.LEFT=150;
-RespPlotBundle.prototype.RIGHT=0;
-RespPlotBundle.prototype.TOP=0;
-RespPlotBundle.prototype.BOTTOM=50;
 
 const mapStateToProps = function (state,ownProps) {
   return {
@@ -388,8 +460,8 @@ const mapStateToProps = function (state,ownProps) {
     dataPoint_hoverSelection: state.plot.dataPoint_hoverSelection || null,
     inPlotXRangeSelection_StartX: state.plot.inPlotXRangeSelection_StartX || null,
     inPlotXRangeSelection_EndX: state.plot.inPlotXRangeSelection_EndX || null,
-    onPlotXRangeSelection_StartX: state.plot.onPlotXRangeSelection_StartX || 0,
-    onPlotXRangeSelection_EndX: state.plot.onPlotXRangeSelection_EndX || 2000,
+    onPlotXRangeSelection_StartX: state.plot.onPlotXRangeSelection_StartX || 1482858000,
+    onPlotXRangeSelection_EndX: state.plot.onPlotXRangeSelection_EndX || 1502858000,
     onPlotXRangeSelection_LeftDeltaX: state.plot.onPlotXRangeSelection_LeftDeltaX || 0,
     onPlotXRangeSelection_RightDeltaX: state.plot.onPlotXRangeSelection_RightDeltaX || 0,
     procedurePlot_selection: state.plot.procedurePlot_selection || null,

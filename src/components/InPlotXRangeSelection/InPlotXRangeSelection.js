@@ -5,7 +5,6 @@ class InPlotXRangeSelection extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
-    this.memo = {};
   }
 
   render() {
@@ -27,8 +26,7 @@ class InPlotXRangeSelection extends PureComponent {
   
   draw() {
     let { minX, maxX, width,
-          startX,endX,
-          ...rest} = this.props;
+          startX,endX} = this.props;
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,1);
@@ -37,10 +35,10 @@ class InPlotXRangeSelection extends PureComponent {
       return;
     }
     // Coord
-    let startDomX= Math.max(0,toDomXCoord_Linear(width,minX,maxX,startX));
-    let endDomX = Math.min(width,toDomXCoord_Linear(width,minX,maxX,endX));
+    let startDomX= Math.round(Math.max(0,toDomXCoord_Linear(width,minX,maxX,startX)));
+    let endDomX = Math.round(Math.min(width,toDomXCoord_Linear(width,minX,maxX,endX)));
     // Draw
-    ctx.globalAlpha=0.2;
+    ctx.globalAlpha=0.3;
     ctx.fillRect(startDomX,0,endDomX-startDomX,1);
   }
 }

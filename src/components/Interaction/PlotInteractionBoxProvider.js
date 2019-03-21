@@ -4,18 +4,17 @@ import PlotInteractionBox from "./PlotInteractionBox";
 class PlotInteractionBoxProvider extends Component {
   constructor(props){
     super(props);
-    this.state = {hoveringPosition:null,
-                  hoverEndPosition:null,
-                  clickPosition:null,
-                  doubleClickPosition:null,
-                  selectingPositionStart:null,
-                  selectingPositionEnd:null,
-                  selectedPositionStart:null,
-                  selectedPositionEnd:null,
-                  panningPositionStart:null,
-                  panningPositionEnd:null,
-                  pannedPositionStart:null,
-                  pannedPositionEnd:null
+    this.state = {hoveringPosition:undefined,
+                  clickPosition:undefined,
+                  doubleClickPosition:undefined,
+                  selectingPositionStart:undefined,
+                  selectingPositionEnd:undefined,
+                  selectedPositionStart:undefined,
+                  selectedPositionEnd:undefined,
+                  panningPositionStart:undefined,
+                  panningPositionEnd:undefined,
+                  pannedPositionStart:undefined,
+                  pannedPositionEnd:undefined
                   };
   }
   
@@ -41,8 +40,8 @@ class PlotInteractionBoxProvider extends Component {
     this.setState({hoveringPosition});
   }
 
-  handleHoverEnd = (hoverEndPosition)=>{
-    this.setState({hoverEndPosition});
+  handleHoverEnd = ()=>{
+    this.setState({hoveringPosition:null});
   }
 
   handleClick = (clickPosition)=>{
@@ -60,7 +59,10 @@ class PlotInteractionBoxProvider extends Component {
   
   handleSelected = (selectedPositionStart,selectedPositionEnd)=>{
     this.setState({ selectedPositionStart,
-                    selectedPositionEnd});
+                    selectedPositionEnd,
+                    selectingPositionStart:null,
+                    selectingPositionEnd:null
+                    });
   }
   
   handlePanning = (panningPositionStart,panningPositionEnd)=>{
@@ -70,7 +72,9 @@ class PlotInteractionBoxProvider extends Component {
   
   handlePanned = (pannedPositionStart,pannedPositionEnd)=>{
     this.setState({ pannedPositionStart,
-                    pannedPositionEnd});
+                    pannedPositionEnd,
+                    panningPositionStart:null,
+                    panningPositionEnd:null});
   }
 }
 

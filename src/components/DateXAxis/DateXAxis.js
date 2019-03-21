@@ -12,7 +12,7 @@ class DateXAxis extends PureComponent {
   render() {
     let { minX,maxX,
           width,height,
-          style,
+          style,position,
           ...rest} = this.props;
     return (
       <canvas ref={this.ref}  width={width} height={height}
@@ -34,7 +34,7 @@ class DateXAxis extends PureComponent {
   draw() {
     let { minX,maxX,
           width,height,
-          ...rest} = this.props;
+          position} = this.props;
     this.draw_memo = this.draw_memo || {validFromDiffX:0,validToDiffX:-1,rangeMinX:0,rangeMaxX:-1};
     let memo = this.draw_memo;
     let diffX = maxX-minX;
@@ -64,7 +64,7 @@ class DateXAxis extends PureComponent {
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
     this.bitmapPlot(ctx,width,height,domXs,labelBitmaps);
-    this.ticPlot(ctx,width,height,domXs);
+    this.ticPlot(ctx,width,height,domXs,position);
   }
   
   getGridLabels(minX,maxX,grids){
@@ -108,14 +108,14 @@ class DateXAxis extends PureComponent {
             return grids.map((x)=>format(x,"HH:mm"));
           }
           else {
-            return grids.map((x)=>format(x,"HH"));
+            return grids.map((x)=>format(x,"hha"));
           }
         }
         if (maxT_Date-minT_Date<2) {
-          return grids.map((x)=>format(x,"DD HH"));
+          return grids.map((x)=>format(x,"Do hha"));
         }
         else {
-          return grids.map((x)=>format(x,"DD"));
+          return grids.map((x)=>format(x,"Do"));
         }
       }
       if (maxT_Month-minT_Month<2) {
@@ -158,14 +158,33 @@ class DateXAxis extends PureComponent {
     }
   }
   
-  ticPlot(ctx,width,height,domXs){
-    ctx.beginPath();
-    let y = Math.round(height*0.1);
-    for (let x of domXs){
-      ctx.moveTo(Math.round(x),0);
-      ctx.lineTo(Math.round(x),y);
+  ticPlot(ctx,width,height,domXs,position){
+    let y;
+    switch (position) {
+      case "x":
+      default:
+        ctx.beginPath();
+        y = Math.round(height*0.1);
+        for (let x of domXs){
+          ctx.moveTo(Math.round(x),0);
+          ctx.lineTo(Math.round(x),y);
+        }
+        ctx.moveTo(0,0);
+        ctx.lineTo(width,0);
+        ctx.stroke();
+        break;
+      case "x1":
+        ctx.beginPath();
+        y = Math.round(height*0.9);
+        for (let x of domXs){
+          ctx.moveTo(Math.round(x),y);
+          ctx.lineTo(Math.round(x),height);
+        }
+        ctx.moveTo(0,height);
+        ctx.lineTo(width,height);
+        ctx.stroke();
+        break;
     }
-    ctx.stroke();
   }
 }
 

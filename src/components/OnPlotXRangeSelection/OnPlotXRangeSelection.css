@@ -1,0 +1,23 @@
+.leftHandle {
+  background-color:grey;
+  opacity: 0.5;
+  cursor:w-resize;
+}
+
+.rightHandle {
+  background-color:grey;
+  opacity: 0.5;
+  cursor:e-resize;
+}
+
+.mainHandle {
+  background-color:lightgrey;
+  opacity: 0.5;
+  cursor:ew-resize;
+}
+
+.topHandle {
+  background-color:lightgrey;
+  opacity: 0.5;
+  cursor:ew-resize;
+}
