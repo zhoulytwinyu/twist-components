@@ -92,10 +92,10 @@ export function drawSecondaryCategory(ctx,width,height,labelBitmap,bgColor,start
   ctx.fillRect(xOffset,start,plotWidth,plotHeight);
   if (bitmap.width!==0 &&
       bitmap.height!==0) {
-    let srcx = Math.round(bitmap.width/2-plotWidth/2);
+    let srcx = 0;
     let srcy = Math.round(bitmap.height/2-plotHeight/2);
     ctx.drawImage(bitmap,srcx,srcy,plotWidth,plotHeight,
-                         xOffset,start,plotWidth,plotHeight);
+                         xOffset+5,start,plotWidth,plotHeight);
   }
 }
 
@@ -113,10 +113,10 @@ export function drawSecondaryCategories(ctx,width,height,labelBitmaps,bgColors,s
     ctx.fillRect(xOffset,start,plotWidth,plotHeight);
     if (bitmap.width!==0 &&
         bitmap.height!==0) {
-      let srcx = Math.round(bitmap.width/2-plotWidth/2);
+      let srcx = 0
       let srcy = Math.round(bitmap.height/2-plotHeight/2);
       ctx.drawImage(bitmap,srcx,srcy,plotWidth,plotHeight,
-                           xOffset,start,plotWidth,plotHeight);
+                           xOffset+5,start,plotWidth,plotHeight);
     }
   }
 }

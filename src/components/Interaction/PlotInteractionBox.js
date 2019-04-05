@@ -20,14 +20,15 @@ class PlotInteractionBox extends PureComponent {
           clickHandler,doubleClickHandler,
           selectingHandler,selectedHandler,
           panningHandler,pannedHandler,
-          children,
-          ...rest
+          width,height,
+          children
           } = this.props;
+    let style = {width,height};
     switch (this.state.mode) {
       case "hovering":
         return (
           <>
-            <div  ref={this.ref} {...rest}
+            <div  ref={this.ref} style={style}
                   onMouseMove={this.handleMouseMove_Hovering}
                   onMouseOut={this.handleMouseOut_Hovering}
                   onMouseDown={this.handleMouseDown_Hovering}
@@ -39,7 +40,7 @@ class PlotInteractionBox extends PureComponent {
       case "clicking":
         return (
           <>
-            <div  ref={this.ref} {...rest}>
+            <div  ref={this.ref} style={style}>
               {children}
             </div>
             <DragOverlay mouseMoveHandler={this.handleMouseMove_Clicking} mouseUpHandler={this.handleMouseUp_Clicking} cursor="point"/>
@@ -49,7 +50,7 @@ class PlotInteractionBox extends PureComponent {
       case "auto-selecting":
         return (
           <>
-            <div  ref={this.ref} {...rest}>
+            <div  ref={this.ref} style={style}>
               {children}
             </div>
             <DragOverlay mouseMoveHandler={this.handleMouseMove_AutoSelecting} mouseUpHandler={this.handleMouseUp_AutoSelecting} cursor="nesw-resize"/>
@@ -59,21 +60,19 @@ class PlotInteractionBox extends PureComponent {
       case "selecting":
         return (
           <>
-            <div  ref={this.ref} {...rest}>
+            <div  ref={this.ref} style={style}>
               {children}
             </div>
             <DragOverlay mouseMoveHandler={this.handleMouseMove_Selecting} mouseUpHandler={this.handleMouseUp_Selecting} cursor="nesw-resize"/>
-            <div className="PlotInteractionBox-selectingOverlay"></div>
           </>
         );
       case "panning":
         return (
           <>
-            <div  ref={this.ref} {...rest}>
+            <div  ref={this.ref} style={style}>
               {children}
             </div>
             <DragOverlay mouseMoveHandler={this.handleMouseMove_Panning} mouseUpHandler={this.handleMouseUp_Panning} cursor="grabbing"/>
-            <div className="PlotInteractionBox-panningOverlay"></div>
           </>
         );
       default:
@@ -81,12 +80,18 @@ class PlotInteractionBox extends PureComponent {
     }
   }
   
+  getCustomEventObject(ev){
+    let {left,top} = this.ref.current.getBoundingClientRect();
+    let {clientX,clientY} = ev;
+    let domX = clientX - left;
+    let domY = clientY - top;
+    return {domX,domY,clientX,clientY}
+  }
+  
   handleMouseMove_Hovering = (ev)=>{
     let {hoveringHandler} = this.props;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    hoveringHandler({domX,domY});
+    let myEV = this.getCustomEventObject(ev);
+    hoveringHandler(myEV);
   }
 
   handleMouseOut_Hovering = (ev)=>{
@@ -97,11 +102,8 @@ class PlotInteractionBox extends PureComponent {
   handleMouseDown_Hovering = (ev)=>{
     let {hoverEndHandler} = this.props;
     ev.preventDefault();
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    let mousePosition = {domX,domY};
-    this.initialMouseDownPosition = mousePosition;
+    let myEV = this.getCustomEventObject(ev);
+    this.initialMouseDownPosition = myEV;
     hoverEndHandler();
     this.setState({mode:"clicking"});
   }
@@ -118,15 +120,13 @@ class PlotInteractionBox extends PureComponent {
   handleMouseMove_Clicking = (ev)=> {
     let {selectingHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    if (Math.abs(domX-initialMouseDownPosition.domX)<10 ||
-        Math.abs(domY-initialMouseDownPosition.domX)<10) {
+    let myEV = this.getCustomEventObject(ev);
+    if (Math.abs(myEV.domX-initialMouseDownPosition.domX)<10 ||
+        Math.abs(myEV.domY-initialMouseDownPosition.domX)<10) {
       return;
     }
     else {
-      selectingHandler({domX,domY});
+      selectingHandler({start:initialMouseDownPosition,end:myEV});
       this.setState({mode:"selecting"});
     }
   }
@@ -134,16 +134,14 @@ class PlotInteractionBox extends PureComponent {
   handleMouseUp_Clicking = (ev)=> {
     let {clickHandler,doubleClickHandler} = this.props;
     let {prevClickTimeStamp} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
+    let myEV = this.getCustomEventObject(ev);
     if (prevClickTimeStamp===null || prevClickTimeStamp+200<ev.timeStamp ) {
       this.prevClickTimeStamp = ev.timeStamp;
-      clickHandler({domX,domY});
+      clickHandler(myEV);
     }
     else {
       this.prevClickTimeStamp = null;
-      doubleClickHandler({domX,domY});
+      doubleClickHandler(myEV);
     }
     this.setState({mode:"hovering"});
   }
@@ -152,15 +150,13 @@ class PlotInteractionBox extends PureComponent {
   handleMouseMove_AutoSelecting = (ev)=>{
     let {selectingHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    if (Math.abs(domX-initialMouseDownPosition.domX)<10 ||
-        Math.abs(domY-initialMouseDownPosition.domX)<10) {
+    let myEV = this.getCustomEventObject(ev);
+    if (Math.abs(myEV.domX-initialMouseDownPosition.domX)<10 ||
+        Math.abs(myEV.domY-initialMouseDownPosition.domX)<10) {
       return;
     }
     else {
-      selectingHandler(initialMouseDownPosition, {domX,domY});
+      selectingHandler({start:initialMouseDownPosition,end:myEV});
       this.setState({mode:"selecting"});
     }
   }
@@ -172,38 +168,30 @@ class PlotInteractionBox extends PureComponent {
   handleMouseMove_Selecting = (ev)=>{
     let {selectingHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    selectingHandler(initialMouseDownPosition,{domX,domY});
+    let myEV = this.getCustomEventObject(ev);
+    selectingHandler({start:initialMouseDownPosition,end:myEV});
   }
 
   handleMouseUp_Selecting = (ev)=>{
     let {selectedHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    selectedHandler(initialMouseDownPosition,{domX,domY});
+    let myEV = this.getCustomEventObject(ev);
+    selectedHandler({start:initialMouseDownPosition,end:myEV});
     this.setState({mode:"hovering"});
   }
 
   handleMouseMove_Panning = (ev)=>{
     let {panningHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    panningHandler(initialMouseDownPosition,{domX,domY});
+    let myEV = this.getCustomEventObject(ev);
+    panningHandler({start:initialMouseDownPosition,end:myEV});
   }
 
   handleMouseUp_Panning = (ev)=>{
     let {pannedHandler} = this.props;
     let {initialMouseDownPosition} = this;
-    let referenceFrame = this.ref.current.getBoundingClientRect();
-    let domX = ev.clientX - referenceFrame.left;
-    let domY = ev.clientY - referenceFrame.top;
-    pannedHandler(initialMouseDownPosition,{domX,domY});
+    let myEV = this.getCustomEventObject(ev);
+    pannedHandler({start:initialMouseDownPosition,end:myEV});
     this.setState({mode:"hovering"});
   }
 }

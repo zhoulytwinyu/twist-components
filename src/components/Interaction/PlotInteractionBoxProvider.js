@@ -4,24 +4,21 @@ import PlotInteractionBox from "./PlotInteractionBox";
 class PlotInteractionBoxProvider extends Component {
   constructor(props){
     super(props);
-    this.state = {hoveringPosition:undefined,
-                  clickPosition:undefined,
-                  doubleClickPosition:undefined,
-                  selectingPositionStart:undefined,
-                  selectingPositionEnd:undefined,
-                  selectedPositionStart:undefined,
-                  selectedPositionEnd:undefined,
-                  panningPositionStart:undefined,
-                  panningPositionEnd:undefined,
-                  pannedPositionStart:undefined,
-                  pannedPositionEnd:undefined
+    this.state = {hoveringPosition:null,
+                  clickPosition:null,
+                  doubleClickPosition:null,
+                  selectingPositions:null,
+                  selectedPositions:null,
+                  panningPositions:null,
+                  pannedPositions:null
                   };
   }
   
   render(){
-    let {render,...rest} = this.props;
+    let {render,width,height} = this.props;
     return (
-      <PlotInteractionBox {...rest}
+      <PlotInteractionBox width={width}
+                          height={height}
                           hoveringHandler={this.handleHovering}
                           hoverEndHandler={this.handleHoverEnd}
                           clickHandler={this.handleClick}
@@ -52,29 +49,22 @@ class PlotInteractionBoxProvider extends Component {
     this.setState({doubleClickPosition});
   }
   
-  handleSelecting = (selectingPositionStart,selectingPositionEnd)=>{
-    this.setState({ selectingPositionStart,
-                    selectingPositionEnd});
+  handleSelecting = (selectingPositions)=>{
+    this.setState({ selectingPositions });
   }
   
-  handleSelected = (selectedPositionStart,selectedPositionEnd)=>{
-    this.setState({ selectedPositionStart,
-                    selectedPositionEnd,
-                    selectingPositionStart:null,
-                    selectingPositionEnd:null
-                    });
+  handleSelected = (selectedPositions)=>{
+    this.setState({ selectedPositions,
+                    selectingPositions:null});
   }
   
-  handlePanning = (panningPositionStart,panningPositionEnd)=>{
-    this.setState({ panningPositionStart,
-                    panningPositionEnd});
+  handlePanning = (panningPositions)=>{
+    this.setState({ panningPositions });
   }
   
-  handlePanned = (pannedPositionStart,pannedPositionEnd)=>{
-    this.setState({ pannedPositionStart,
-                    pannedPositionEnd,
-                    panningPositionStart:null,
-                    panningPositionEnd:null});
+  handlePanned = (pannedPositions)=>{
+    this.setState({ pannedPositions,
+                    panningPositions:null});
   }
 }
 

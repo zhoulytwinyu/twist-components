@@ -12,14 +12,9 @@ class RespiratoryScoresPlot extends PureComponent {
   }
 
   render() {
-    let { respiratoryScores, /*[{time,RespiratorySupportScore,ECMOScore}]*/
-          iNO, /*[{start,end}]*/
-          anesthetics, /*[{start,end}]*/
-          minX,maxX,width,
-          minY,maxY,height,
-          ...rest} = this.props;
+    let { width,height } = this.props;
     return (
-      <canvas ref={this.ref} height={height} width={width} {...rest}></canvas>
+      <canvas ref={this.ref} height={height} width={width} style={{display:"block",width:width,height:height}}></canvas>
     );
   }
 
@@ -32,9 +27,9 @@ class RespiratoryScoresPlot extends PureComponent {
   }
   
   draw() {
-    let { respiratoryScores,
-          iNO,
-          anesthetics,
+    let { respiratoryScores, /*[{time,RespiratorySupportScore,ECMOScore}]*/
+          iNO, /*[{start,end}]*/
+          anesthetics, /*[{start,end}]*/
           minX,maxX,width,
           minY,maxY,height
           } = this.props;

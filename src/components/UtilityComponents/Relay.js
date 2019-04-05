@@ -1,36 +1,31 @@
-import {Component} from "react";
+import {Component} from "react"
 
 class Relay extends Component{
-  render(){
-    return null;
+  constructor(props){
+    super(props)
+    this.lastData = null
   }
-
-  shouldComponentUpdate(nextProps,nextState){
-    let {updateHandler,...rest} = this.props;
-    let {updateHandler:nupdateHandler,...nrest} = nextProps;
-    if (Object.keys(rest).length !== Object.keys(nrest).length) {
-      return true;
-    }
-    for (let k of Object.keys(rest)) {
-      if (rest[k] !== nrest[k]) {
-        return true;
-      }
-    }
-    return false;
+  
+  render(){
+    return null
   }
 
   componentDidMount(){
-    this.update();
+    this.update()
   }
   
   componentDidUpdate(){
-    this.update();
+    this.update()
   }
 
   update(){
-    let {updateHandler,...rest} = this.props;
-    updateHandler(rest);
+    let {updateHandler,data} = this.props
+    if (this.lastData===data) {
+      return
+    }
+    this.lastData = data
+    updateHandler(data)
   }
 }
 
-export default Relay;
+export default Relay

@@ -1,11 +1,12 @@
-import { Component } from "react";
+import { PureComponent } from "react";
 import {toDomXCoord_Linear} from "plot-utils";
 // Import constants
 import ProcedureObject, {compareProcedureObjects} from "./ProcedureObject";
 
-class ProcedurePlotClickSelector extends Component {
+class ProcedurePlotClickSelector extends PureComponent {
   constructor(props){
     super(props);
+    this.lastEvent = null;
     this.pickingCanvas = document.createElement("canvas");
     this.pickingCanvas.width = 1;
     this.pickingCanvas.height = 1;
@@ -13,13 +14,6 @@ class ProcedurePlotClickSelector extends Component {
   
   render() {
     return null;
-  }
-
-  shouldComponentUpdate(nextProps,nextState){
-    if (nextProps.clickPosition!==this.props.clickPosition) {
-      return true;
-    }
-    return false;
   }
   
   componentDidMount(){
@@ -36,10 +30,11 @@ class ProcedurePlotClickSelector extends Component {
           minX,maxX,width,height,
           clickPosition,
           selectHandler} = this.props;
-    if (clickPosition===undefined) {
+    if (clickPosition===this.lastEvent) {
       return;
     }
-    if (clickPosition===null) {
+    this.lastEvent = clickPosition;
+    if (!clickPosition) {
       selectHandler(null);
       return;
     }

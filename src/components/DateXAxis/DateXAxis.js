@@ -10,14 +10,10 @@ class DateXAxis extends PureComponent {
   }
   
   render() {
-    let { minX,maxX,
-          width,height,
-          style,position,
-          ...rest} = this.props;
+    let { width,height} = this.props;
     return (
       <canvas ref={this.ref}  width={width} height={height}
-                              style={{backgroundColor:"#fff7e4",...style}}
-                              {...rest}
+                              style={{width:width,height:height,display:"block",backgroundColor:"#ffe1bb"}}
                               >
       </canvas>
     );

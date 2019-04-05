@@ -10,12 +10,9 @@ class ProceduresPlot extends PureComponent {
   }
 
   render() {
-    let { data, /*[{name,start,end}]*/
-          selection,
-          minX,maxX,height,width,
-          ...rest} = this.props;
+    let { height,width } = this.props;
     return (
-      <canvas ref={this.ref} height={height} width={width} {...rest}></canvas>
+      <canvas ref={this.ref} height={height} width={width} style={{display:"block",width:width,height:height}}></canvas>
     );
   }
 

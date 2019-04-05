@@ -8,11 +8,9 @@ class InPlotXRangeSelection extends PureComponent {
   }
 
   render() {
-    let { minX,maxX,width,
-          startX,endX,
-          ...rest} = this.props;
+    let { width,height} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={1} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={1} style={{height:height,display:"block",width:width}}></canvas>
     );
   }
   

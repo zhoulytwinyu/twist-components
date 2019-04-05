@@ -15,14 +15,11 @@ class LocationPlot extends PureComponent {
   }
   
   render() {
-    let { data,
-          width,minX,maxX,
-          style,
-          ...rest} = this.props;
+    let { height,
+          width } = this.props;
     return (
       <canvas ref={this.ref} width={width} height={1}
-              {...rest}
-              style={{...style,backgroundColor:"lightgrey"}}>
+              style={{height:height,width:width,backgroundColor:"lightgrey",display:"block"}}>
       </canvas>
     );
   }

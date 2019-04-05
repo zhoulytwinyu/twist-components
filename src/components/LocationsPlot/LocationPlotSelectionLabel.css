@@ -1,8 +1,7 @@
 .floatDiv {
-  position: absolute;
+  position: relative;
   width: 100px;
   margin-left: -50px;
-  vertical-align: middle;
   text-align: center;
   color:white;
   font: 14pt Sans;

@@ -1,7 +1,12 @@
 import {Component} from "react";
-import {toDomXCoord_Linear} from "plot-utils";
+import {fromDomXCoord_Linear} from "plot-utils";
 
 class VerticalCrosshairSelector extends Component {
+  constructor(props){
+    super(props);
+    this.lastEvent=null;
+  }
+  
   render(){
     return null;
   }
@@ -15,9 +20,19 @@ class VerticalCrosshairSelector extends Component {
   }
 
   select(){
-    let { hoverPosition,selectHandler,
+    let { hoveringPosition,selectHandler,
           width,minX,maxX} = this.props;
-    selectHandler(toDomXCoord_Linear(width,minX,maxX,hoverPosition.domX));
+    // old event
+    if (hoveringPosition===this.lastEvent) {
+      return;
+    }
+    // new event
+    this.lastEvent = hoveringPosition;
+    if (!hoveringPosition)
+      selectHandler(null);
+    else {
+      selectHandler(fromDomXCoord_Linear(width,minX,maxX,hoveringPosition.domX));
+    }
   }
 }
 

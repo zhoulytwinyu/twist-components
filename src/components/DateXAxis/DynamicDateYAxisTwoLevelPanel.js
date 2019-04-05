@@ -15,11 +15,9 @@ class DynamicDateYAxisTwoLevelPanel extends PureComponent {
   }
   
   render(){
-    let { minX,maxX,
-          height,width,
-          ...rest} = this.props;
+    let { height,width,} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={height} style={{display:"block",height:height,width:width}}></canvas>
     );
   }
   

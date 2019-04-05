@@ -6,28 +6,21 @@ import DragOverlay from "../UtilityComponents/DragOverlay";
 // CSS
 import "./OnPlotXRangeSelection.css";
 
-const SIDE_HANDLE_WIDTH = 5;
-const TOP_HANDLE_HEIGHT = 10;
+const SIDE_HANDLE_WIDTH = 7;
+const TOP_HANDLE_HEIGHT = 7;
 
 class OnPlotXRangeSelection extends PureComponent {
   constructor(props){
     super(props);
     this.ref = React.createRef();
     this.state = {dragged:null};
-    this.initialDragStartDataX = null;
-    this.initialStartX = null;
-    this.initialEndX = null;
-    this.referenceFrame = null;
+    this.snapshot = {};
   }
   
   render() {
     let { minX,maxX,width,
           startX,endX,height,
-          topHandle,
-          draggingLeftHandler,draggingMainHandler,draggingRightHandler,
-          draggedLeftHandler,draggedMainHandler,draggedRightHandler,
-          style,
-          ...rest} = this.props;
+          topHandle} = this.props;
     let {dragged} = this.state;
     // Calculate positions
     let x0,x1;
@@ -38,25 +31,40 @@ class OnPlotXRangeSelection extends PureComponent {
     let rightHandleElem = null;
     let mainHandleElem = null;
     let documentInteractionElem = null;
-    let overlayElem = null;
     let top = topHandle ? TOP_HANDLE_HEIGHT : 0;
     // Left handle
     if (x0>=0 && x0<=width) {
-      leftHandleElem = <div style={{position:"absolute",left:x0,top:top,width:SIDE_HANDLE_WIDTH,height:height-top}}
+      leftHandleElem = <div style={{position:"absolute",
+                                    left:x0,
+                                    top:top,
+                                    width:SIDE_HANDLE_WIDTH,
+                                    height:height-top}}
                             className="leftHandle"
                             onMouseDown={this.handleLeftHandleDragStart}
                             >
                        </div>;
     }
     if ( x1>=0 && x1<=width ) {
-      rightHandleElem = <div  style={{position:"absolute",left:x1, marginLeft:-SIDE_HANDLE_WIDTH,top:top,width:SIDE_HANDLE_WIDTH,height:height-top}}
+      rightHandleElem = <div  style={{position:"absolute",
+                                      left:x1,
+                                      marginLeft:-SIDE_HANDLE_WIDTH,
+                                      top:top,
+                                      width:SIDE_HANDLE_WIDTH,
+                                      height:height-top}}
                               className="rightHandle"
                               onMouseDown={this.handleRightHandleDragStart}
                               >
                        </div>;
     }
+    let mainLeft = Math.min(x0,x1-SIDE_HANDLE_WIDTH);
+    let mainRight = Math.max(x1,x0+SIDE_HANDLE_WIDTH);
+    let mainWidth = mainRight-mainLeft;
     if ( !(x0>width || 0>x1) ) {
-      mainHandleElem = <div style={{position:"absolute",left:x0,top:0,width:x1-x0,height:height}}
+      mainHandleElem = <div style={{position:"absolute",
+                                    left:mainLeft,
+                                    top:0,
+                                    width:mainWidth,
+                                    height:height}}
                             className="mainHandle"
                             onMouseDown={this.handleMainHandleDragStart}
                             >
@@ -79,7 +87,7 @@ class OnPlotXRangeSelection extends PureComponent {
     
     return (
       <>
-        <div ref={this.ref} {...rest}>
+        <div ref={this.ref} style={{overflow:"hidden",position:"relative",height:height,width:width,top:0,left:0}}>
           {mainHandleElem}
           {leftHandleElem}
           {rightHandleElem}
@@ -89,100 +97,120 @@ class OnPlotXRangeSelection extends PureComponent {
     );
   }
   
-  handleLeftHandleDragStart = (ev)=>{
+  handleDragStart(ev) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.referenceFrame = this.ref.current.getBoundingClientRect();
-    let {width,minX,maxX,startX} = this.props;
-    let {referenceFrame} = this;
-    this.initialStartX = startX;
-    this.initialDragStartDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let { width,minX,
+          maxX,startX,endX} = this.props;
+    let {snapshot} = this;
+    let referenceFrame = this.ref.current.getBoundingClientRect();
+    snapshot.referenceFrame = referenceFrame;
+    snapshot.width = width;
+    snapshot.minX = minX;
+    snapshot.maxX = maxX;
+    snapshot.startX = startX;
+    snapshot.endX = endX;
+    snapshot.initialDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+  }
+  handleLeftHandleDragStart = (ev)=>{
+    this.handleDragStart(ev);
     this.setState({dragged:"left"});
   }
   handleRightHandleDragStart = (ev)=>{
-    ev.stopPropagation();
-    ev.preventDefault();
-    this.referenceFrame = this.ref.current.getBoundingClientRect();
-    let {width,minX,maxX,endX} = this.props;
-    let {referenceFrame} = this;
-    this.initialEndX = endX;
-    this.initialDragStartDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    this.handleDragStart(ev);
     this.setState({dragged:"right"});
   }
   handleMainHandleDragStart = (ev)=>{
-    ev.stopPropagation();
-    ev.preventDefault();
-    this.referenceFrame = this.ref.current.getBoundingClientRect();
-    let {width,minX,maxX,startX,endX} = this.props;
-    let {referenceFrame} = this;
-    this.initialStartX = startX;
-    this.initialEndX = endX;
-    this.initialDragStartDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    this.handleDragStart(ev);
     this.setState({dragged:"main"});
   }
 
   handleLeftHandleDragging = (ev)=>{
     ev.stopPropagation();
     ev.preventDefault();
-    let {draggingLeftHandler,width,minX,maxX,endX} = this.props;
-    let {initialDragStartDataX,initialStartX} = this;
-    let {referenceFrame} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let newStartX = initialStartX + currentDataX - initialDragStartDataX;
+    let {draggingLeftHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let newStartX = curDragX -initialDragX + startX;
     newStartX = this.snapStartX(newStartX,minX,endX);
-    let deltaDataX = newStartX - initialStartX;
-    draggingLeftHandler(deltaDataX);
+    draggingLeftHandler(newStartX,endX);
   }
   handleRightHandleDragging = (ev)=>{
-    let {draggingRightHandler,width,minX,maxX,startX} = this.props;
-    let {initialDragStartDataX,initialEndX} = this;
-    let {referenceFrame} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let newEndX = initialEndX + currentDataX - initialDragStartDataX;
+    ev.stopPropagation();
+    ev.preventDefault();
+    let {draggingRightHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let newEndX = curDragX -initialDragX + endX;
     newEndX = this.snapEndX(newEndX,startX,maxX);
-    let deltaDataX = newEndX - initialEndX;
-    draggingRightHandler(deltaDataX);
+    draggingRightHandler(startX,newEndX);
   }
   handleMainHandleDragging = (ev)=>{
-    let {draggingMainHandler,width,minX,maxX} = this.props;
-    let {initialDragStartDataX} = this;
-    let {referenceFrame,initialStartX,initialEndX} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let deltaDataX = currentDataX - initialDragStartDataX;
-    deltaDataX = Math.max(minX-initialStartX,Math.min(maxX-initialEndX,deltaDataX)) 
-    draggingMainHandler(deltaDataX);
+    ev.stopPropagation();
+    ev.preventDefault();
+    let {draggingMainHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let deltaX = curDragX - initialDragX;
+    deltaX = Math.max(Math.min(deltaX,maxX-endX),minX-startX);
+    draggingMainHandler(startX+deltaX,endX+deltaX);
   }
   
   handleLeftHandleDragged = (ev)=>{
-    let {draggedLeftHandler,width,minX,maxX,endX} = this.props;
-    let {initialDragStartDataX} = this;
-    let {referenceFrame,initialStartX} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let newStartX = initialStartX + currentDataX - initialDragStartDataX;
+    ev.stopPropagation();
+    ev.preventDefault();
+    let {draggedLeftHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let newStartX = curDragX -initialDragX + startX;
     newStartX = this.snapStartX(newStartX,minX,endX);
-    let deltaDataX = newStartX - initialStartX;
-    draggedLeftHandler(deltaDataX);
+    draggedLeftHandler(newStartX,endX);
     this.setState({dragged:null});
   }
   handleRightHandleDragged = (ev)=>{
-    let {draggedRightHandler,width,minX,maxX,startX} = this.props;
-    let {initialDragStartDataX} = this;
-    let {referenceFrame,initialEndX} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let newEndX = initialEndX + currentDataX - initialDragStartDataX;
+    ev.stopPropagation();
+    ev.preventDefault();
+    let {draggedRightHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let newEndX = curDragX -initialDragX + endX;
     newEndX = this.snapEndX(newEndX,startX,maxX);
-    let deltaDataX = newEndX - initialEndX;
-    draggedRightHandler(deltaDataX);
+    draggedRightHandler(startX,newEndX);
     this.setState({dragged:null});
   }
   handleMainHandleDragged = (ev)=>{
-    let {draggedMainHandler,width,minX,maxX} = this.props;
-    let {initialDragStartDataX} = this;
-    let {referenceFrame,initialStartX,initialEndX} = this;
-    let currentDataX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
-    let deltaDataX = currentDataX - initialDragStartDataX;
-    deltaDataX = Math.max(minX-initialStartX,Math.min(maxX-initialEndX,deltaDataX)) 
-    draggedMainHandler(deltaDataX);
+    ev.stopPropagation();
+    ev.preventDefault();
+    let {draggedMainHandler} = this.props;
+    let {snapshot} = this;
+    let { width,minX,maxX,
+          startX,endX,
+          referenceFrame,
+          initialDragX} = snapshot;
+    let curDragX = fromDomXCoord_Linear(width,minX,maxX,ev.clientX-referenceFrame.left);
+    let deltaX = curDragX - initialDragX;
+    deltaX = Math.max(Math.min(deltaX,maxX-endX),minX-startX);
+    draggedMainHandler(startX+deltaX,endX+deltaX);
     this.setState({dragged:null});
   }
 

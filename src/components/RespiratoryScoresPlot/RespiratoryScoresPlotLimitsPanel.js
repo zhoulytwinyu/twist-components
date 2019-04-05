@@ -28,11 +28,10 @@ class RespiratoryScoresPlotLimitsPanel extends PureComponent {
   }
   
   render() {
-    let { height, minY, maxY,
-          width,secondaryCategories,primaryCategories,
-          ...rest} = this.props;
+    let { height,
+          width } = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={height} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={height} style={{display:"block",width:width,height:height}}></canvas>
     );
   }
   

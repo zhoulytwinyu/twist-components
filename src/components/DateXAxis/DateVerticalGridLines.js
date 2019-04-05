@@ -9,10 +9,10 @@ class DateVerticalGridLines extends PureComponent {
   }
   
   render() {
-    let { width,minX,maxX,
-          ...rest} = this.props;
+    let { width,
+          height} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={1} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={1} style={{display:"block",height:height,width:width}}></canvas>
     );
   }
   
@@ -49,7 +49,7 @@ class DateVerticalGridLines extends PureComponent {
     let majorGridDomXs = memo.majorGrids.slice(majorGridStartIndex,majorGridEndIndex+1)
                               .map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
     let minorGridStartIndex = Math.max(0,bisect_right(memo.minorGrids,minX));
-    let minorGridEndIndex = Math.min(memo.majorGrids.length-1,bisect_left(memo.minorGrids,maxX));
+    let minorGridEndIndex = Math.min(memo.minorGrids.length-1,bisect_left(memo.minorGrids,maxX));
     let minorGridDomXs = memo.minorGrids.slice(minorGridStartIndex,minorGridEndIndex+1)
                                         .map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
     // Draw
@@ -79,8 +79,9 @@ class DateVerticalGridLines extends PureComponent {
     }
     let minorGrids = [];
     let prevGrid = grids[0];
-    for (let i=1; i<grids.length; i++){
-      minorGrids.push((grids[i]+prevGrid)/2);
+    for (let grid of grids){
+      minorGrids.push((grid+prevGrid)/2);
+      prevGrid = grid;
     }
     return minorGrids;
   }

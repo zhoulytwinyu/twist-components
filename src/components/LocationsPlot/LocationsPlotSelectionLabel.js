@@ -5,8 +5,7 @@ import "./LocationPlotSelectionLabel.css"
 class LocationPlotSelectionLabel extends PureComponent {
   render() {
     let { selection, /* {name,start,end} */
-          minX,maxX,width,
-          ...rest} = this.props;
+          minX,maxX,width} = this.props;
     if (!selection) {
       return null;
     }
@@ -15,8 +14,8 @@ class LocationPlotSelectionLabel extends PureComponent {
     let label = selection.name;
     let labelDomX = (Math.max(0,domStart)+Math.min(width,domEnd))/2;
     return (
-      <div {...rest}>
-        <div style={{left:labelDomX}} className="floatDiv">
+      <div>
+        <div className="floatDiv" style={{left:labelDomX}}>
           {label}
         </div>
       </div>

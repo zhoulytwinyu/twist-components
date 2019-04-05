@@ -1,0 +1,50 @@
+/* Original Author Jiaan */
+.bloodPressurePanel-container {
+  background-color: #ffeece;
+  font-family: Sans;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bloodPressurePanel-section {
+  padding: 5px;
+}
+
+.bloodPressurePanel-sectionTitle {
+    color: #3F4065;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.bloodPressurePanel-greenLabel {
+  color: #64CA53;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.bloodPressurePanel-orangeLabel {
+  color: #fb6d00;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.bloodPressurePanel-redLabel {
+  color: #eb3218;
+  font-weight: 800;
+  font-size: 40px;
+}
+
+.bloodPressurePanel-VPSubtitle {
+  width: 50px;
+  display: inline-block;
+  font-weight: 400;
+  font-size: 12px;
+}
+.bloodPressurePanel-VPLabel {
+  width: 50px;
+  display: inline-block;
+  text-align: right;
+  font-weight: 800;
+  font-size: 12px;
+}

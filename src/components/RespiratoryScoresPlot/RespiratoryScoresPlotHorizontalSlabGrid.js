@@ -20,10 +20,10 @@ class RespiratoryPlotHorizontalSlabGrid extends PureComponent {
   }
 
   render(){
-    let { minY,maxY,height,
-          ...rest} = this.props;
+    let { height,
+          width} = this.props;
     return (
-      <canvas ref={this.ref} height={height} width={1} {...rest}></canvas>
+      <canvas ref={this.ref} height={height} width={1} style={{display:"block",width:width,height:height}}></canvas>
     );
   }
 

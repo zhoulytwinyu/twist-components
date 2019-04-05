@@ -1,18 +1,17 @@
-import {Component} from "react";
+import {PureComponent} from "react";
 import {fromDomXCoord_Linear} from "plot-utils";
 
-class InPlotXRangeSelector extends Component{
+class InPlotXRangeSelector extends PureComponent{
+  constructor(props) {
+    super(props);
+    this.lastEvent = null;
+    this.snapshot = {};
+  }
+  
   render(){
     return null;
   }
 
-  shouldComponentUpdate(nextProps,nextState){
-    if (this.props.selectingPositionStart !== this.props.selectingPositionEnd ||
-        nextProps.selectingPositionStart !== nextProps.selectingPositionEnd) {
-      return true;
-    }
-    return false;
-  }
 
   componentDidMount(){
     this.select();
@@ -23,20 +22,32 @@ class InPlotXRangeSelector extends Component{
   }
 
   select(){
-    let { selectingPositionStart,selectingPositionEnd,
+    let { selectingPositions,
           minX,maxX,width,
           selectHandler
           } = this.props;
-    if (selectingPositionStart===undefined || selectingPositionEnd===undefined) {
+    let {snapshot} = this;
+    // Stale event
+    if (selectingPositions===this.lastEvent) {
       return;
     }
-    if (selectingPositionStart===null || selectingPositionEnd===null) {
+    // Selection stops
+    if (selectingPositions===null) {
       selectHandler(null,null);
+      this.lastEvent = null;
       return;
     }
-    let startX = fromDomXCoord_Linear(width,minX,maxX,selectingPositionStart.domX);
-    let endX = fromDomXCoord_Linear(width,minX,maxX,selectingPositionEnd.domX);
-    selectHandler(startX,endX);
+    // Selecting
+    if (!this.lastEvent) {
+      // Start of selection, create snapshot
+      snapshot.width = width;
+      snapshot.minX = minX;
+      snapshot.maxX = maxX;
+      snapshot.initialStartX = fromDomXCoord_Linear(width,minX,maxX,selectingPositions.start.domX);
+    }
+    let curDataX = fromDomXCoord_Linear(snapshot.width,snapshot.minX,snapshot.maxX,selectingPositions.end.domX);
+    selectHandler(snapshot.initialStartX,curDataX);
+    this.lastEvent = selectingPositions;
   }
 }
 

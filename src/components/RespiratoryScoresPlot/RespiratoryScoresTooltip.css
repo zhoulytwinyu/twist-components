@@ -1,0 +1,21 @@
+.RSTooltip-title {
+  font-size: 14px;
+  padding:0 5px;
+  font-family: Sans;
+}
+
+.RSTooltip-time{
+  font-size: 11px;
+  padding:0 5px;
+  font-family: Sans;
+}
+
+.RSTooltip-content {
+  font-size:11px;
+  padding:0 5px;
+  font-family: Sans;
+}
+
+.float-right {
+  float: right;
+}

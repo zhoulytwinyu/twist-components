@@ -1,7 +1,13 @@
 import { Component } from "react";
 import {bisect_left} from "bisect";
 import {fromDomXCoord_Linear} from "plot-utils";
-import {DISPLAY_STYLE_LUT} from "./ProceduresPlotContants";
+
+const PROCEDURE_TYPE = {"HLHS STAGE I, CARDIAC":0,
+                        "CHEST CLOSURE, CARDIAC OFF UNIT":2,
+                        "GASTROSTOMY, LAPAROSCOPIC, GENSURG":0,
+                        "VESICOSTOMY CREATION/CLOSURE, GU":2,
+                        "BIDIRECTIONAL GLEN SHUNT, CARDIAC":1
+                        };
 
 class ProcedurePlotHoverSelector extends Component {
   render() {
@@ -40,7 +46,7 @@ class ProcedurePlotHoverSelector extends Component {
     // Column index data and fill bitmaps etc.
     if (memo.data !== data ) {
       memo.data = data;
-      memo.filteredData = data.filter(({name})=>DISPLAY_STYLE_LUT[name]===0);
+      memo.filteredData = data.filter(({name})=>PROCEDURE_TYPE[name]===0);
       memo.ends = memo.filteredData.map(({end})=>end);
     }
     if (memo.filteredData.length===0) {

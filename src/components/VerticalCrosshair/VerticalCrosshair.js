@@ -8,11 +8,10 @@ class VerticalCrosshair extends PureComponent {
   }
   
   render() {
-    let { X,
-          minX,maxX,width,
-          ...rest} = this.props;
+    let { width,
+          height} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={1} {...rest}></canvas>
+      <canvas ref={this.ref} width={width} height={1} style={{width:width,height:height,display:"block"}}></canvas>
     );
   }
   
@@ -35,8 +34,8 @@ class VerticalCrosshair extends PureComponent {
     }
     let hoverDomX = toDomXCoord_Linear(width,minX,maxX,X);
     ctx.beginPath();
-    ctx.moveTo(hoverDomX-0.5,0);
-    ctx.lineTo(hoverDomX-0.5,1);
+    ctx.moveTo(Math.round(hoverDomX)+0.5,0);
+    ctx.lineTo(Math.round(hoverDomX)+0.5,1);
     ctx.stroke();
   }
 }
