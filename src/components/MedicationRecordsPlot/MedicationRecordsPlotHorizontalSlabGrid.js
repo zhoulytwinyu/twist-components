@@ -9,7 +9,7 @@ class MedicationRecordsPlotHorizontalSlabGrid extends PureComponent {
   }
 
   render(){
-    let { width, height, rowHeight} = this.props;
+    let { width,height } = this.props;
     return (
       <canvas ref={this.ref} height={height} width={1} style={{display:"block",width:width,height:height}}></canvas>
     );

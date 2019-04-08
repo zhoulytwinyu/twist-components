@@ -81,22 +81,22 @@ export function drawPrimaryCategories(ctx,width,height,labelBitmaps,bgColors,sta
 }
 
 export function drawSecondaryCategory(ctx,width,height,labelBitmap,bgColor,startDomX,endDomX){
+  if (labelBitmap.width===0 ||
+      labelBitmap.height===0 ||
+      labelBitmap.height > height) {
+    return;
+  }
   let plotWidth = width - PRIMARY_PANEL_WIDTH;
   let xOffset = PRIMARY_PANEL_WIDTH;
   let start = Math.round(startDomX);
   let end = Math.round(endDomX);
-  let color = bgColor;
-  let bitmap = labelBitmap;
   let plotHeight = end-start;
-  ctx.fillStyle = color;
+  ctx.fillStyle = bgColor;
   ctx.fillRect(xOffset,start,plotWidth,plotHeight);
-  if (bitmap.width!==0 &&
-      bitmap.height!==0) {
-    let srcx = 0;
-    let srcy = Math.round(bitmap.height/2-plotHeight/2);
-    ctx.drawImage(bitmap,srcx,srcy,plotWidth,plotHeight,
-                         xOffset+5,start,plotWidth,plotHeight);
-  }
+  let srcx = 0;
+  let srcy = Math.round(labelBitmap.height/2-plotHeight/2);
+  ctx.drawImage(labelBitmap,srcx,srcy,plotWidth,plotHeight,
+                       xOffset+5,start,plotWidth,plotHeight);
 }
 
 

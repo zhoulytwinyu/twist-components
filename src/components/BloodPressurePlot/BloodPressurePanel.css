@@ -48,3 +48,9 @@
   font-weight: 800;
   font-size: 12px;
 }
+
+.bloodPressurePanel-flexRowCenter {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}

@@ -32,11 +32,9 @@ class MedicationRecordsPlotBundle extends PureComponent {
     let { minX,maxX,
           verticalCrosshair_X,
           width,
-          panningX,
           medications,
           categoryStructure
           } = this.props;
-    let { changeHandler } = this.props;
     let plotWidth = width-LEFT_WIDTH;
     return (
       <>
@@ -67,7 +65,7 @@ class MedicationRecordsPlotBundle extends PureComponent {
                 <PlotSubContainer>
                   <DateXAxis  minX={minX} maxX={maxX}
                               height={TOP_HEIGHT} width={plotWidth}
-                              position="x1"
+                              tickPosition="bottom"
                               />
                 </PlotSubContainer>
                 <PlotSubContainer>

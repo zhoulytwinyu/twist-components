@@ -13,7 +13,7 @@ class BloodPressureLeftPanel extends PureComponent {
           <div className="bloodPressurePanel-orangeLabel"> 155 </div>
           <div className="bloodPressurePanel-redLabel"> 68% </div>
         </div>
-        <div className="bloodPressurePanel-section">
+        <div className="bloodPressurePanel-section bloodPressurePanel-flexRowCenter">
           <LinearGradientColorScale width={100} height={20}/>
         </div>
         <div className="bloodPressurePanel-section">
@@ -45,7 +45,7 @@ class LinearGradientColorScale extends PureComponent {
   render(){
     let {width,height} = this.props;
     return (
-      <canvas ref={this.ref} width={width} height={height} style={{border:"solid 1px black"}}/>
+      <canvas ref={this.ref} width={width} height={height} style={{border:"solid 1px black",display:"block",width:width,height:height}}/>
     )
   }
   

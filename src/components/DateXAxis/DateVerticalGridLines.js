@@ -28,18 +28,18 @@ class DateVerticalGridLines extends PureComponent {
     let {minX,maxX,width} = this.props;
     let diffX = maxX-minX;
     // Generate grid if needed
-    this.draw_memo = this.draw_memo || {validFromDiffX:0, validToDiffX: -1, rangeMinX:0, rangeMaxX: -1};
+    this.draw_memo = this.draw_memo || {validFromDiff:0, validToDiff: -1, rangeMinX:0, rangeMaxX: -1};
     let memo = this.draw_memo;
-    if (memo.validFromDiffX>diffX ||
-        diffX>memo.validToDiffX ||
+    if (memo.validFromDiff>diffX ||
+        diffX>memo.validToDiff ||
         memo.rangeMinX>minX ||
         maxX>memo.rangeMaxX
         ) {
       memo.rangeMinX = minX-10*diffX;
       memo.rangeMaxX = maxX+10*diffX;
-      let {grids, validFromDiffX, validToDiffX} = generateDateGrids(minX,maxX,memo.rangeMinX,memo.rangeMaxX);
-      memo.validFromDiffX = validFromDiffX;
-      memo.validToDiffX = validToDiffX;
+      let {grids, validFromDiff, validToDiff} = generateDateGrids(minX,maxX,memo.rangeMinX,memo.rangeMaxX);
+      memo.validFromDiff = validFromDiff;
+      memo.validToDiff = validToDiff;
       memo.majorGrids = grids;
       memo.minorGrids = this.generateMinorGrids(grids);
     }

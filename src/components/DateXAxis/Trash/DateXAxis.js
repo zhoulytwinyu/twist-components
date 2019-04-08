@@ -31,22 +31,22 @@ class DateXAxis extends PureComponent {
     let { minX,maxX,
           width,height,
           tickPosition} = this.props;
-    this.draw_memo = this.draw_memo || {validFromDiff:0,validToDiff:-1,rangeMinX:0,rangeMaxX:-1};
+    this.draw_memo = this.draw_memo || {validFromDiffX:0,validToDiffX:-1,rangeMinX:0,rangeMaxX:-1};
     let memo = this.draw_memo;
     let diffX = maxX-minX;
     // Generate grids, labels and bitmaps in cache
-    if (memo.validFromDiff>diffX ||
-        diffX>memo.validToDiff ||
+    if (memo.validFromDiffX>diffX ||
+        diffX>memo.validToDiffX ||
         memo.rangeMinX>minX ||
         maxX>memo.rangeMaxX
         ) {
       memo.rangeMinX = minX-10*diffX;
       memo.rangeMaxX = maxX+10*diffX;
-      let {grids, validFromDiff, validToDiff} = generateDateGrids(minX,maxX,memo.rangeMinX,memo.rangeMaxX);
-      memo.validFromDiff = validFromDiff;
-      memo.validToDiff = validToDiff;
+      let {grids, validFromDiffX, validToDiffX} = generateDateGrids(minX,maxX,memo.rangeMinX,memo.rangeMaxX);
+      memo.validFromDiffX = validFromDiffX;
+      memo.validToDiffX = validToDiffX;
       memo.grids = grids;
-      let gridLabels = this.getGridLabels(grids);
+      let gridLabels = this.getGridLabels(minX,maxX,grids);
       memo.labelBitmaps = gridLabels.map((text)=>this.createTextBitmaps(text));
     }
     // Filter
@@ -63,36 +63,70 @@ class DateXAxis extends PureComponent {
     this.ticPlot(ctx,width,height,domXs,tickPosition);
   }
   
-  getGridLabels(grids){
-    let labels = [];
-    let t = new Date();
-    for (let grid of grids) {
-      t.setTime(grid);
-      labels.push(this.getMeaningfulDateField(t));
-    }
-    return labels;
-  }
-  
-  getMeaningfulDateField(d){
-    if (d.getMilliseconds()===0) {
-      if (d.getSeconds()===0) {
-        if (d.getMinutes()===0){
-          if (d.getHours()===0){
-            if (d.getDate()===1) {
-              if (d.getMonth()===0) {
-                return format(d,"YYYY");
+  getGridLabels(minX,maxX,grids){
+    let minT = new Date(minX);
+    let maxT = new Date(maxX);
+    let minT_Year = minT.getFullYear();
+    let maxT_Year = maxT.getFullYear();
+    if (minT_Year===maxT_Year){
+      let minT_Month = minT.getMonth();
+      let maxT_Month = maxT.getMonth();
+      if (minT_Month===maxT_Month){
+        let minT_Date = minT.getDate();
+        let maxT_Date = maxT.getDate();
+        if (minT_Date===maxT_Date){
+          let minT_Hour = minT.getHours();
+          let maxT_Hour = maxT.getHours();
+          if (minT_Hour===maxT_Hour){
+            let minT_Minute = minT.getMinutes();
+            let maxT_Minute = maxT.getMinutes();
+            if (minT_Minute===maxT_Minute){
+              let minT_Second = minT.getSeconds();
+              let maxT_Second = maxT.getSeconds();
+              if (minT_Second===maxT_Second){
+                return grids.map((x)=>format(x,"SSS"));
               }
-              return format(d,"MMM");
+              if (maxT_Second-minT_Second<2) {
+                return grids.map((x)=>format(x,"ss.SSS"));
+              }
+              else {
+                return grids.map((x)=>format(x,"ss"));
+              }
             }
-            return format(d,"Do");
+            if (maxT_Minute-minT_Minute<2) {
+              return grids.map((x)=>format(x,"mm:ss"));
+            }
+            else {
+              return grids.map((x)=>format(x,"mm"));
+            }
           }
-          return format(d,"HH:00");
+          if (maxT_Hour-minT_Hour<2) {
+            return grids.map((x)=>format(x,"HH:mm"));
+          }
+          else {
+            return grids.map((x)=>format(x,"hha"));
+          }
         }
-        return format(d,"HH:mm");
+        if (maxT_Date-minT_Date<2) {
+          return grids.map((x)=>format(x,"Do hha"));
+        }
+        else {
+          return grids.map((x)=>format(x,"Do"));
+        }
       }
-      return format(d,"HH:mm:ss");
+      if (maxT_Month-minT_Month<2) {
+        return grids.map((x)=>format(x,"MMM/DD"));
+      }
+      else {
+        return grids.map((x)=>format(x,"MMM"));
+      }
     }
-    return format(d,"ss.SSS");
+    if (maxT_Year-minT_Year<2) {
+      return grids.map((x)=>format(x,"YYYY/MMM"));
+    }
+    else {
+      return grids.map((x)=>format(x,"YYYY"));
+    }
   }
   
   createTextBitmaps(text) {

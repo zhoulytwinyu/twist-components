@@ -245,7 +245,7 @@ class RespPlotBundle extends PureComponent {
         <PlotSubContainer>
           <DateXAxis  minX={minX} maxX={maxX}
                       height={BOTTOM_HEIGHT} width={plotWidth}
-                      position="x2"
+                      tickPosition="top"
                       />
         </PlotSubContainer>
         {/*Col RIGHT*/}

@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react'
-import {toDomXCoord_Linear,
-        fromDomXCoord_Linear} from "plot-utils"
+import {toDomXCoord_Linear} from "plot-utils"
 import MedicationRecordObject from "./MedicationRecordObject"
 
 class MedicationRecordsDynamicPlot extends PureComponent {

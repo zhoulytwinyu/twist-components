@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PlotInteractionBox, {INTERACTION_MODEL_PANNING} from "./PlotInteractionBox";
+import PlotInteractionBox from "./PlotInteractionBox";
 
 class PlotInteractionBoxProvider extends Component {
   constructor(props){
@@ -19,7 +19,6 @@ class PlotInteractionBoxProvider extends Component {
     return (
       <PlotInteractionBox width={width}
                           height={height}
-                          transitionGraph={INTERACTION_MODEL_PANNING}
                           hoveringHandler={this.handleHovering}
                           hoverEndHandler={this.handleHoverEnd}
                           clickHandler={this.handleClick}

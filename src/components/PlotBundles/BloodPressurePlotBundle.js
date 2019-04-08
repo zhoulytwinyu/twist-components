@@ -13,6 +13,9 @@ import DynamicDateYAxisTwoLevelPanel from "../DateXAxis/DynamicDateYAxisTwoLevel
 import DateXAxis from "../DateXAxis/DateXAxis";
 import DateVerticalGridLines from "../DateXAxis/DateVerticalGridLines";
 //
+import YAxis from "../YAxis/YAxis";
+import YAxisSlabGrid from "../YAxis/YAxisSlabGrid";
+//
 import PlotInteractionBoxProvider from "../Interaction/PlotInteractionBoxProvider";
 import VerticalCrosshair from "../VerticalCrosshair/VerticalCrosshair";
 import VerticalCrosshairSelector from "../VerticalCrosshair/VerticalCrosshairSelector";
@@ -31,7 +34,6 @@ class BloodPressurePlotBundle extends PureComponent {
     let { DBP,MBP,SBP,
           width,minX,maxX,height,
           verticalCrosshair_X} = this.props
-    let { changeHandler } = this.props;
     let plotWidth = width-LEFT_WIDTH-RIGHT_WIDTH
     let plotHeight = height-TOP_HEIGHT-BOTTOM_HEIGHT
 
@@ -50,7 +52,7 @@ class BloodPressurePlotBundle extends PureComponent {
         <PlotSubContainer>
           <DateXAxis  minX={minX} maxX={maxX}
                       height={TOP_HEIGHT} width={plotWidth}
-                      position="x1"
+                      tickPosition="bottom"
                       />
         </PlotSubContainer>
         {/*Col RIGHT*/}
@@ -60,12 +62,16 @@ class BloodPressurePlotBundle extends PureComponent {
         {/*Col LEFT*/}
         <PlotSubContainer>
           <BloodPressurePanel height={plotHeight} width={LEFT_WIDTH}/>
+          <YAxis  minY={minY} maxY={maxY}
+                  width={LEFT_WIDTH} height={plotHeight}
+                  tickPosition="right"
+                  />
         </PlotSubContainer>
         {/*Col PLOT*/}
         <PlotSubContainer>
-          <BloodPressuresHorizontalSlabGrid height={plotHeight}
-                                            width={plotWidth} minY={minY} maxY={maxY}
-                                            />
+          <YAxisSlabGrid  height={plotHeight}
+                          width={plotWidth} minY={minY} maxY={maxY}
+                          />
           <DateVerticalGridLines  height={plotHeight}
                                   width={plotWidth} minX={minX} maxX={maxX}
                                   />

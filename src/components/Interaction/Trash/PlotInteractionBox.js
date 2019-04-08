@@ -6,65 +6,34 @@ import CountDown from "../UtilityComponents/CountDown";
 // CSS
 import "./PlotInteractionBox.css";
 
-export const MODE_HOVERING = "hovering";
-export const MODE_CLICKING = "clicking";
-export const MODE_AUTOSELECTING = "autoSelecting";
-export const MODE_SELECTING = "selecting";
-export const MODE_PANNING = "panning";
-
-export const ACTION_MOUSEDOWN = "mouseDown";
-export const ACTION_MOUSEMOVE = "mouseMove";
-export const ACTION_MOUSEUP = "mouseUp";
-export const ACTION_TIMEOUT = "timeout";
-
-export const INTERACTION_MODEL_DEFAULT = {[MODE_HOVERING]:{ [ACTION_MOUSEDOWN]:MODE_CLICKING},
-                                          [MODE_CLICKING]:{ [ACTION_TIMEOUT]:MODE_AUTOSELECTING,
-                                                            [ACTION_MOUSEMOVE]:MODE_SELECTING,
-                                                            [ACTION_MOUSEUP]:MODE_HOVERING
-                                                            },
-                                          [MODE_AUTOSELECTING]:{[ACTION_TIMEOUT]:MODE_PANNING,
-                                                                [ACTION_MOUSEMOVE]:MODE_SELECTING
-                                                                },
-                                          [MODE_SELECTING]:{[ACTION_MOUSEUP]:MODE_HOVERING},
-                                          [MODE_PANNING]:{[ACTION_MOUSEUP]:MODE_HOVERING}
-                                          };
-
-export const INTERACTION_MODEL_SELECTING = {[MODE_HOVERING]:{ [ACTION_MOUSEDOWN]:MODE_CLICKING},
-                                            [MODE_CLICKING]:{ [ACTION_TIMEOUT]:MODE_SELECTING,
-                                                              [ACTION_MOUSEMOVE]:MODE_SELECTING,
-                                                              [ACTION_MOUSEUP]:MODE_HOVERING
-                                                              },
-                                            [MODE_SELECTING]:{[ACTION_MOUSEUP]:MODE_HOVERING}
-                                            };
-
-export const INTERACTION_MODEL_PANNING = {[MODE_HOVERING]:{ [ACTION_MOUSEDOWN]:MODE_CLICKING},
-                                          [MODE_CLICKING]:{ [ACTION_TIMEOUT]:MODE_PANNING,
-                                                            [ACTION_MOUSEMOVE]:MODE_PANNING,
-                                                            [ACTION_MOUSEUP]:MODE_HOVERING
-                                                            },
-                                          [MODE_PANNING]:{  [ACTION_MOUSEUP]:MODE_HOVERING}
-                                          };
-
-export const INTERACTION_MODEL_BARE = { [MODE_HOVERING]:{[ACTION_MOUSEDOWN]:MODE_CLICKING},
-                                        [MODE_CLICKING]:{[ACTION_MOUSEUP]:MODE_HOVERING},
-                                        };
+const INTERACTION_MODEL_4PHASE = {"hovering":{"click":"auto-selecting"},
+                                  "auto-selecting":{"timeout":"panning"},
+                                  "auto-selecting":{"mousemove":"selecting"},
+                                  "auto-selecting":{"mouseup":"hovering"},
+                                  "selecting":{"mouseup":"hovering"},
+                                  "panning":{"mouseup":"hovering"}
+                                  };
 
 class PlotInteractionBox extends PureComponent {
   constructor(props){
     super(props);
-    this.state={mode:MODE_HOVERING};
+    this.state={mode:"hovering"};
     this.ref = React.createRef();
     this.initialMouseDownPosition = null;
     this.prevClickTimeStamp = null;
   }
 
   render() {
-    let { width,height,
+    let { hoveringHandler,hoverEndHandler,
+          clickHandler,doubleClickHandler,
+          selectingHandler,selectedHandler,
+          panningHandler,pannedHandler,
+          width,height,
           children
           } = this.props;
     let style = {width,height};
     switch (this.state.mode) {
-      case MODE_HOVERING:
+      case "hovering":
         return (
           <>
             <div  ref={this.ref} style={style}
@@ -76,7 +45,7 @@ class PlotInteractionBox extends PureComponent {
             </div>
           </>
         );
-      case MODE_CLICKING:
+      case "clicking":
         return (
           <>
             <div  ref={this.ref} style={style}>
@@ -86,7 +55,7 @@ class PlotInteractionBox extends PureComponent {
             <CountDown timeout={200} callback={this.clickTimeout}/>
           </>
         );
-      case MODE_AUTOSELECTING:
+      case "auto-selecting":
         return (
           <>
             <div  ref={this.ref} style={style}>
@@ -96,7 +65,7 @@ class PlotInteractionBox extends PureComponent {
             <CountDown timeout={500} callback={this.autoSelectingTimeout}/>
           </>
         );
-      case MODE_SELECTING:
+      case "selecting":
         return (
           <>
             <div  ref={this.ref} style={style}>
@@ -105,7 +74,7 @@ class PlotInteractionBox extends PureComponent {
             <DragOverlay mouseMoveHandler={this.handleMouseMove_Selecting} mouseUpHandler={this.handleMouseUp_Selecting} cursor="nesw-resize"/>
           </>
         );
-      case MODE_PANNING:
+      case "panning":
         return (
           <>
             <div  ref={this.ref} style={style}>
@@ -115,21 +84,7 @@ class PlotInteractionBox extends PureComponent {
           </>
         );
       default:
-        return (
-          <p>
-            {this.state.mode}
-          </p>
-        );
-        //throw new Error("ProgrammerTooDumbError");
-    }
-  }
-  
-  transition(action) {
-    let {transitionGraph} = this.props;
-    let {mode} = this.state;
-    let nextMode = transitionGraph[mode][action];
-    if (nextMode) {
-      this.setState({mode:nextMode});
+        throw new Error("ProgrammerTooDumbError");
     }
   }
   
@@ -158,15 +113,16 @@ class PlotInteractionBox extends PureComponent {
     let myEV = this.getCustomEventObject(ev);
     this.initialMouseDownPosition = myEV;
     hoverEndHandler();
-    this.transition(ACTION_MOUSEDOWN);
+    this.setState({mode:"clicking"});
   }
+
   
   clickTimeout = ()=> {
-    this.transition(ACTION_TIMEOUT);
+    this.setState({mode:"auto-selecting"});
   }
 
   autoSelectingTimeout = ()=>{
-    this.transition(ACTION_TIMEOUT);
+    this.setState({mode:"panning"});
   }
   
   handleMouseMove_Clicking = (ev)=> {
@@ -178,7 +134,8 @@ class PlotInteractionBox extends PureComponent {
       return;
     }
     else {
-      this.transition(ACTION_MOUSEMOVE);
+      selectingHandler({start:initialMouseDownPosition,end:myEV});
+      this.setState({mode:"selecting"});
     }
   }
 
@@ -194,7 +151,7 @@ class PlotInteractionBox extends PureComponent {
       this.prevClickTimeStamp = null;
       doubleClickHandler(myEV);
     }
-    this.transition(ACTION_MOUSEUP);
+    this.setState({mode:"hovering"});
   }
 
 
@@ -208,12 +165,12 @@ class PlotInteractionBox extends PureComponent {
     }
     else {
       selectingHandler({start:initialMouseDownPosition,end:myEV});
-      this.transition(ACTION_MOUSEMOVE);
+      this.setState({mode:"selecting"});
     }
   }
 
   handleMouseUp_AutoSelecting = (ev)=>{
-    this.transition(ACTION_MOUSEUP);
+    this.setState({mode:"hovering"});
   }
   
   handleMouseMove_Selecting = (ev)=>{
@@ -228,7 +185,7 @@ class PlotInteractionBox extends PureComponent {
     let {initialMouseDownPosition} = this;
     let myEV = this.getCustomEventObject(ev);
     selectedHandler({start:initialMouseDownPosition,end:myEV});
-    this.transition(ACTION_MOUSEUP);
+    this.setState({mode:"hovering"});
   }
 
   handleMouseMove_Panning = (ev)=>{
@@ -243,7 +200,7 @@ class PlotInteractionBox extends PureComponent {
     let {initialMouseDownPosition} = this;
     let myEV = this.getCustomEventObject(ev);
     pannedHandler({start:initialMouseDownPosition,end:myEV});
-    this.transition(ACTION_MOUSEUP);
+    this.setState({mode:"hovering"});
   }
 }
 
