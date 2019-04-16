@@ -12,23 +12,32 @@ class DragOverlay extends PureComponent {
   componentDidMount(){
     document.addEventListener("mousemove",this.handleMouseMove,true)
     document.addEventListener("mouseup",this.handleMouseUp,true)
+    //document.addEventListener("DOMMouseScroll",this.ignoreScroll)
   }
 
   componentWillUnmount(){
     document.removeEventListener("mousemove",this.handleMouseMove,true)
     document.removeEventListener("mouseup",this.handleMouseUp,true)
+    //document.removeEventListener("DOMMouseScroll",this.ignoreScroll)
   }
   
   handleMouseMove = (ev)=>{
+    ev.preventDefault();
     ev.stopPropagation()
     let {mouseMoveHandler} = this.props
     mouseMoveHandler(ev)
   }
 
   handleMouseUp = (ev)=>{
+    ev.preventDefault();
     ev.stopPropagation()
     let {mouseUpHandler} = this.props
     mouseUpHandler(ev)
+  }
+  
+  ignoreScroll(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
   }
 }
 

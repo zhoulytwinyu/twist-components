@@ -46,19 +46,20 @@ class DateXAxis extends PureComponent {
       memo.validFromDiff = validFromDiff;
       memo.validToDiff = validToDiff;
       memo.grids = grids;
-      memo.gridLabels = this.getGridLabels(grids);
+      let gridLabels = this.getGridLabels(grids);
+      memo.labelBitmaps = gridLabels.map((text)=>this.createTextBitmaps(text));
     }
     // Filter
     let startIndex = Math.max(0,bisect_right(memo.grids,minX));
     let endIndex = Math.min(memo.grids.length-1,bisect_left(memo.grids,maxX));
     
     let domXs = memo.grids.slice(startIndex,endIndex+1).map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
-    let gridLabels = memo.gridLabels.slice(startIndex,endIndex+1);
+    let labelBitmaps = memo.labelBitmaps.slice(startIndex,endIndex+1);
     // Plot
     let canvas = this.ref.current;
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0,0,width,height);
-    this.textPlot(ctx,width,height,domXs,gridLabels);
+    this.bitmapPlot(ctx,width,height,domXs,labelBitmaps);
     this.ticPlot(ctx,width,height,domXs,tickPosition);
   }
   
@@ -93,15 +94,29 @@ class DateXAxis extends PureComponent {
     }
     return format(d,"ss.SSS");
   }
-
-  textPlot(ctx,width,height,domXs,texts){
+  
+  createTextBitmaps(text) {
+    let font = "12px Sans";
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d");
+    ctx.font = font;
+    let width = ctx.measureText(text).width;
+    let height = 12;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.font = font;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    ctx.fillText(text,width/2,height/2);
+    return canvas;
+  }
+
+  bitmapPlot(ctx,width,height,domXs,bitmaps){
     for (let i=0; i<domXs.length; i++) {
-      let text = texts[i];
-      let x = Math.round(domXs[i]);
-      let y = Math.round(height/2);
-      ctx.fillText(text,x,y);
+      let bitmap = bitmaps[i];
+      let x = Math.round(domXs[i]-bitmap.width/2);
+      let y = Math.round(height/2-bitmap.height/2);
+      ctx.drawImage(bitmap,x,y);
     }
   }
   

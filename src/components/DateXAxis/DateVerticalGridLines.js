@@ -44,8 +44,8 @@ class DateVerticalGridLines extends PureComponent {
       memo.minorGrids = this.generateMinorGrids(grids);
     }
     // Filter
-    let majorGridStartIndex = Math.max(0,bisect_right(memo.majorGrids,minX));
-    let majorGridEndIndex = Math.min(memo.majorGrids.length-1,bisect_left(memo.majorGrids,maxX));
+    let majorGridStartIndex = Math.max(0,bisect_left(memo.majorGrids,minX));
+    let majorGridEndIndex = Math.min(memo.majorGrids.length-1,bisect_right(memo.majorGrids,maxX));
     let majorGridDomXs = memo.majorGrids.slice(majorGridStartIndex,majorGridEndIndex+1)
                               .map( (x)=>toDomXCoord_Linear(width,minX,maxX,x));
     let minorGridStartIndex = Math.max(0,bisect_right(memo.minorGrids,minX));
@@ -67,8 +67,8 @@ class DateVerticalGridLines extends PureComponent {
     ctx.beginPath();
     for (let i=0; i<domXs.length; i++) {
       x = Math.round(domXs[i]);
-      ctx.moveTo(x,0);
-      ctx.lineTo(x,height);
+      ctx.moveTo(0.5+x,0);
+      ctx.lineTo(0.5+x,height);
     }
     ctx.stroke();
   }
