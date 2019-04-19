@@ -1,0 +1,22 @@
+.BeautifulScrollbar-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  cursor: ns-resize;
+  overflow: hidden;
+}
+
+.BeautifulScrollbar-grove {
+  margin: auto;
+  background-color: grey;
+  height:100%;
+  width: 20%;
+}
+
+.BeautifulScrollbar-thumb {
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  background-color: green;
+  border-radius: 5px;
+}

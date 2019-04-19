@@ -1,0 +1,13 @@
+.VirtualList-masterContainer {
+  display: flex;
+  overflow: hidden;
+}
+
+.VirtualList-mainContainer {
+  position: relative;
+}
+
+.VirtualList-rowContainer {
+  position: absolute ;
+  width: 100%;
+}
